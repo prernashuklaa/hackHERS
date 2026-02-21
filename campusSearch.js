@@ -6,12 +6,19 @@ window.confirmCampusSearch = function confirmCampusSearch() {
   const input = document.getElementById("campusSearch");
   const select = document.getElementById("campusSelect");
   const hintEl = document.getElementById("campusHint");
+  if (!window.CAMPUS_DIRECTORY) {
+    console.error("Error: CAMPUS_DIRECTORY not found. Ensure campuses.js is loaded before this script.");
+    if (hintEl) hintEl.textContent = "Error: Database not loaded. Please refresh.";
+    return;
+  }
+  
   const dir = window.CAMPUS_DIRECTORY;
   
   if (!dir || !select || !hintEl) return;
 
   const keyword = (input?.value || "").trim().toLowerCase();
-  
+
+  hintEl.classList.remove("no-results-active");
   // Reset dropdown
   select.innerHTML = `<option value="">No campus selected</option>`;
   window.customCampusName = "";
