@@ -107,17 +107,18 @@ window.renderCampusHint = function renderCampusHint() {
 
 function buildCampusRecommendations(campusKey, text) {
   const dir = getCampusDirectory();
-  if (!campusKey || !dir[campusKey]) return [];
+  if (!campusKey || !dir?.[campusKey]) return [];
 
   const campus = dir[campusKey];
   if (!Array.isArray(campus.resources)) return [];
 
-  const t = (text || "").toLowerCase();
-  const hits = campus.resources.filter((r) =>
-    (r.tags || []).some((tag) => t.includes(String(tag).toLowerCase()))
+  const words = (text || "").toLowerCase().split(/\W+/);
+
+  const hits = campus.resources.filter(r =>
+    (r.tags || []).some(tag => words.includes(tag.toLowerCase()))
   );
 
-  return hits.length ? hits.slice(0, 4) : campus.resources.slice(0, 2);
+  return hits.length > 0 ? hits.slice(0, 4) : campus.resources.slice(0, 2);
 }
 
 /* =========================
