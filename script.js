@@ -1,10 +1,11 @@
 // ============================
-// script.js — Compass Support
+// script.js — Compass Support (FULL FIX + EXPANDED)
 // - Buttons work
 // - Saved chats clickable
 // - Theme toggle works + persists
-// - On-campus resources via tags
-// - Outside resources via Google Maps "near me" by category
+// - Campus resources ONLY show if a campus is selected
+// - Outside resources are Google Maps "near me" links by category
+// - Adds Food recommendations on and off campus
 // ============================
 
 // ---------- Helpers ----------
@@ -56,17 +57,38 @@ window.toggleTheme = function toggleTheme() {
   applyTheme(next);
 };
 
-// ---------- Keyword map (keeps your originals + expanded) ----------
+// ---------- Tags (categories) ----------
+const TAGS = {
+  mental_health: "Mental Health & Emotional Support",
+  health_support: "Physical Health & Medical Care",
+  crisis: "Emergency & Safety",
+  food_support: "Food & Basic Needs",
+  academic_support: "Academic Support",
+  career_support: "Career & Professional Development",
+  financial_support: "Financial Support & Money Help",
+  housing_support: "Housing & Living",
+  transport_support: "Transportation & Mobility",
+  identity_support: "Identity-Based & Cultural Support",
+  legal_support: "Legal & Administrative Help",
+  recreation_support: "Physical Wellness & Recreation",
+  tech_support: "Tech & Study Infrastructure",
+  community_support: "Social Connection & Community",
+  relationship_support: "Relationship & Personal Support",
+};
+
+// ---------- Keyword map (keeps your originals + expands massively) ----------
 const KEYWORD_TAG_MAP = {
-  // --- YOUR ORIGINALS (kept) ---
-  lonely: "social_support",
-  alone: "social_support",
-  friends: "social_support",
-  isolated: "social_support",
-  roommate: "social_support",
-  relationship: "social_support",
-  breakup: "social_support",
-  harassed: "social_support",
+  // ----------------------------
+  // ✅ Your originals (kept)
+  // ----------------------------
+  lonely: "community_support",
+  alone: "community_support",
+  friends: "community_support",
+  isolated: "community_support",
+  roommate: "relationship_support",
+  relationship: "relationship_support",
+  breakup: "relationship_support",
+  harassed: "crisis",
 
   unsafe: "crisis",
   assaulted: "crisis",
@@ -90,9 +112,9 @@ const KEYWORD_TAG_MAP = {
   rent: "financial_support",
   bills: "financial_support",
   tuition: "financial_support",
-  food: "financial_support",
-  groceries: "financial_support",
-  job: "financial_support",
+  food: "food_support",
+  groceries: "food_support",
+  job: "career_support",
   debt: "financial_support",
   finance: "financial_support",
   financial: "financial_support",
@@ -102,63 +124,267 @@ const KEYWORD_TAG_MAP = {
   "self-harm": "crisis",
   "kill myself": "crisis",
 
-  // --- Academic ---
-  "bad in school": "academic_support",
-  failing: "academic_support",
-  failed: "academic_support",
-  grades: "academic_support",
-  grade: "academic_support",
-  gpa: "academic_support",
-  homework: "academic_support",
-  assignment: "academic_support",
+  // ----------------------------
+  // 1) Mental Health & Emotional Support
+  // ----------------------------
+  "counseling center": "mental_health",
+  "individual therapy": "mental_health",
+  "group therapy": "mental_health",
+  "crisis hotline": "crisis",
+  "suicide prevention": "crisis",
+  "stress management": "mental_health",
+  workshop: "mental_health",
+  workshops: "mental_health",
+  "peer support": "mental_health",
+  "support group": "mental_health",
+  "support groups": "mental_health",
+  "mental health": "mental_health",
+  "can’t sleep": "mental_health",
+  "cant sleep": "mental_health",
+  insomnia: "mental_health",
+  "panic attack": "mental_health",
+  "social anxiety": "mental_health",
+  "feeling numb": "mental_health",
+  "need help": "mental_health",
+
+  // ----------------------------
+  // 2) Physical Health & Medical Care
+  // ----------------------------
+  "health center": "health_support",
+  "campus health": "health_support",
+  "urgent care": "health_support",
+  "after hours": "health_support",
+  telehealth: "health_support",
+  "std testing": "health_support",
+  "sti testing": "health_support",
+  "women's health": "health_support",
+  "womens health": "health_support",
+  vaccination: "health_support",
+  vaccinations: "health_support",
+  pharmacy: "health_support",
+  prescription: "health_support",
+  insurance: "health_support",
+  "doctor appointment": "health_support",
+  "feel sick": "health_support",
+  fever: "health_support",
+  cough: "health_support",
+  injury: "health_support",
+  "hurt my": "health_support",
+
+  // ----------------------------
+  // 3) Emergency & Safety
+  // ----------------------------
+  "campus police": "crisis",
+  "emergency": "crisis",
+  "safe walk": "crisis",
+  escort: "crisis",
+  "sexual assault": "crisis",
+  "title ix": "crisis",
+  "domestic violence": "crisis",
+  shelter: "crisis",
+  shelters: "crisis",
+  "crisis intervention": "crisis",
+
+  // ----------------------------
+  // 4) Food & Basic Needs (NEW — Food recs)
+  // ----------------------------
+  "cheap food": "food_support",
+  "cheap eats": "food_support",
+  "late night food": "food_support",
+  "late-night food": "food_support",
+  "food pantry": "food_support",
+  pantry: "food_support",
+  "free meals": "food_support",
+  "free food": "food_support",
+  halal: "food_support",
+  kosher: "food_support",
+  vegetarian: "food_support",
+  vegan: "food_support",
+  "community kitchen": "food_support",
+  "snap help": "food_support",
+  ebt: "food_support",
+  "basic needs": "food_support",
+
+  // ----------------------------
+  // 5) Academic Support
+  // ----------------------------
+  tutoring: "academic_support",
+  tutor: "academic_support",
+  "tutoring center": "academic_support",
+  "writing center": "academic_support",
+  "math help": "academic_support",
+  "study group": "academic_support",
+  "study groups": "academic_support",
+  advising: "academic_support",
+  advisor: "academic_support",
+  "academic advising": "academic_support",
+  "disability accommodations": "academic_support",
+  accommodations: "academic_support",
+  "library hours": "academic_support",
+  "study room": "academic_support",
+  "study rooms": "academic_support",
+  "test prep": "academic_support",
   exam: "academic_support",
   test: "academic_support",
   midterm: "academic_support",
   final: "academic_support",
-  study: "academic_support",
-  studying: "academic_support",
+  failing: "academic_support",
+  failed: "academic_support",
+  grades: "academic_support",
+  gpa: "academic_support",
+  homework: "academic_support",
+  "bad in school": "academic_support",
   "can't focus": "academic_support",
   "cant focus": "academic_support",
-  procrastinating: "academic_support",
   procrastination: "academic_support",
+  procrastinating: "academic_support",
   "time management": "academic_support",
-  tutor: "academic_support",
-  tutoring: "academic_support",
-  "writing help": "academic_support",
-  "math help": "academic_support",
-  "office hours": "academic_support",
-  advising: "academic_support",
-  advisor: "academic_support",
-  "academic advisor": "academic_support",
 
-  // --- Career ---
-  internship: "career_support",
+  // ----------------------------
+  // 6) Career & Professional Development
+  // ----------------------------
+  "career center": "career_support",
   resume: "career_support",
-  "cover letter": "career_support",
-  linkedin: "career_support",
-  interview: "career_support",
+  "resume review": "career_support",
+  "mock interview": "career_support",
+  interviews: "career_support",
+  internship: "career_support",
+  internships: "career_support",
+  "part time job": "career_support",
+  "part-time job": "career_support",
+  "on campus job": "career_support",
+  "on-campus job": "career_support",
   networking: "career_support",
-  "career fair": "career_support",
-  "job search": "career_support",
+  "linkedin workshop": "career_support",
+  headshots: "career_support",
+  "professional headshot": "career_support",
 
-  // --- Health / medical ---
-  sick: "health_support",
-  illness: "health_support",
-  doctor: "health_support",
-  clinic: "health_support",
-  "urgent care": "health_support",
-  medical: "health_support",
-  injury: "health_support",
-  hurt: "health_support",
-  medication: "health_support",
+  // ----------------------------
+  // 7) Financial Support & Money Help
+  // ----------------------------
+  "financial aid": "financial_support",
+  "emergency grant": "financial_support",
+  "emergency grants": "financial_support",
+  scholarship: "financial_support",
+  scholarships: "financial_support",
+  "payment plan": "financial_support",
+  budgeting: "financial_support",
+  "free tax prep": "financial_support",
+  "work study": "financial_support",
+  "work-study": "financial_support",
 
-  // --- Housing ---
+  // ----------------------------
+  // 8) Housing & Living
+  // ----------------------------
   housing: "housing_support",
-  dorm: "housing_support",
+  apartment: "housing_support",
+  apartments: "housing_support",
+  sublease: "housing_support",
+  subleases: "housing_support",
+  "roommate search": "housing_support",
   landlord: "housing_support",
+  "renter rights": "housing_support",
+  "tenant rights": "housing_support",
+  "moving services": "housing_support",
+  dorm: "housing_support",
   eviction: "housing_support",
   lease: "housing_support",
   homeless: "housing_support",
+
+  // ----------------------------
+  // 9) Transportation & Mobility
+  // ----------------------------
+  shuttle: "transport_support",
+  "bus route": "transport_support",
+  "bus routes": "transport_support",
+  train: "transport_support",
+  "train station": "transport_support",
+  airport: "transport_support",
+  parking: "transport_support",
+  "parking permit": "transport_support",
+  "bike share": "transport_support",
+  "bike repair": "transport_support",
+  rental: "transport_support",
+  "car rental": "transport_support",
+  rideshare: "transport_support",
+  uber: "transport_support",
+  lyft: "transport_support",
+
+  // ----------------------------
+  // 10) Identity-Based & Cultural Support
+  // ----------------------------
+  multicultural: "identity_support",
+  "women's center": "identity_support",
+  "womens center": "identity_support",
+  lgbtq: "identity_support",
+  "international student": "identity_support",
+  religion: "identity_support",
+  mosque: "identity_support",
+  temple: "identity_support",
+  church: "identity_support",
+  synagogue: "identity_support",
+  "language support": "identity_support",
+
+  // ----------------------------
+  // 11) Legal & Administrative Help
+  // ----------------------------
+  "legal services": "legal_support",
+  notary: "legal_support",
+  immigration: "legal_support",
+  "academic appeal": "legal_support",
+  disciplinary: "legal_support",
+  "tenant law": "legal_support",
+
+  // ----------------------------
+  // 12) Physical Wellness & Recreation
+  // ----------------------------
+  gym: "recreation_support",
+  fitness: "recreation_support",
+  "fitness class": "recreation_support",
+  yoga: "recreation_support",
+  meditation: "recreation_support",
+  intramural: "recreation_support",
+  recreation: "recreation_support",
+  running: "recreation_support",
+  "outdoor spaces": "recreation_support",
+
+  // ----------------------------
+  // 13) Tech & Study Infrastructure
+  // ----------------------------
+  "computer lab": "tech_support",
+  "computer labs": "tech_support",
+  printing: "tech_support",
+  printer: "tech_support",
+  wifi: "tech_support",
+  "free wifi": "tech_support",
+  "laptop repair": "tech_support",
+  "it help": "tech_support",
+  "help desk": "tech_support",
+  "charging station": "tech_support",
+  "charging stations": "tech_support",
+  "24 hour study": "tech_support",
+  "24-hour study": "tech_support",
+
+  // ----------------------------
+  // 14) Social Connection & Community
+  // ----------------------------
+  clubs: "community_support",
+  "club fair": "community_support",
+  events: "community_support",
+  volunteer: "community_support",
+  volunteering: "community_support",
+  faith: "community_support",
+  mixer: "community_support",
+  "student mixer": "community_support",
+
+  // ----------------------------
+  // 15) Relationship & Personal Support
+  // ----------------------------
+  mediation: "relationship_support",
+  "conflict resolution": "relationship_support",
+  "peer mentoring": "relationship_support",
+  "relationship counseling": "relationship_support",
+  "sexual health education": "relationship_support",
 };
 
 // Match multiple tags
@@ -170,7 +396,7 @@ function getMatchedTags(text) {
     if (t.includes(keyword)) matched.add(tag);
   }
 
-  // Student-first fallback
+  // sensible fallback
   if (matched.size === 0) matched.add("academic_support");
   return matched;
 }
@@ -212,15 +438,37 @@ function getGeoIfAllowed() {
 function buildOutsideResources({ text, campusKey, customCampusName, geo }) {
   const tags = getMatchedTags(text);
 
+  // IMPORTANT: these should be "search intents" (what you want the map results to show)
   const TAG_TO_MAP_QUERY = {
-    academic_support: "tutoring center near me Kumon Sylvan learning center",
-    financial_support: "financial assistance near me food pantry near me",
-    mental_health: "counseling services near me therapy",
-    social_support: "student support group near me peer support",
-    health_support: "urgent care near me clinic near me",
-    housing_support: "housing assistance near me tenant help",
-    career_support: "career coaching near me resume help interview prep",
+    // mental health + safety
+    mental_health: "counseling therapy mental health clinic near me",
     crisis: "crisis center near me",
+    health_support: "urgent care clinic pharmacy near me",
+
+    // academics + career
+    academic_support: "tutoring center near me Kumon Sylvan learning center",
+    career_support: "career coaching resume help interview prep near me",
+
+    // money/housing/legal/etc
+    financial_support: "financial assistance food pantry SNAP help near me",
+    housing_support: "housing assistance tenant help near me",
+    legal_support: "student legal services legal aid notary near me",
+
+    // identity/community/relationships
+    identity_support: "community center cultural center LGBTQ center near me",
+    community_support: "community events student groups near me",
+    relationship_support: "relationship counseling mediation services near me",
+
+    // recreation + tech
+    recreation_support: "gym yoga fitness classes near me",
+    tech_support: "computer repair laptop repair printing services near me",
+
+    // transportation
+    transport_support: "train station bus terminal bike repair near me",
+
+    // FOOD (NEW)
+    food_support:
+      "cheap food late night food grocery store food pantry halal kosher vegan vegetarian near me",
   };
 
   const dir = getCampusDirectory();
@@ -229,22 +477,35 @@ function buildOutsideResources({ text, campusKey, customCampusName, geo }) {
     (customCampusName || "").trim();
 
   const makeMapsUrl = (query) => {
+    // if user selected a campus, bias results around that campus name
     const finalQuery = campusLabel ? `${query} near ${campusLabel}` : query;
     const q = encodeURIComponent(finalQuery);
+
+    // if geolocation exists, open map centered on them
     return geo?.lat && geo?.lon
       ? `https://www.google.com/maps/search/${q}/@${geo.lat},${geo.lon},13z`
       : `https://www.google.com/maps/search/${q}`;
   };
 
-  // Keep it clean: show up to 2 most relevant map links
-  const picked = Array.from(tags).slice(0, 2);
+  // Keep it clean: up to 3 most relevant links
+  // Rule: if food_support is present, include it (people LOVE this feature)
+  const tagList = Array.from(tags);
+  const picked = [];
+
+  if (tags.has("food_support")) picked.push("food_support");
+
+  for (const t of tagList) {
+    if (picked.length >= 3) break;
+    if (!picked.includes(t)) picked.push(t);
+  }
 
   return picked.map((tag) => {
     const query = TAG_TO_MAP_QUERY[tag] || "student support services near me";
+    const label = TAGS[tag] || tag.replaceAll("_", " ");
     return {
-      name: `Nearby help: ${tag.replaceAll("_", " ")}`,
+      name: `Nearby: ${label}`,
       type: "Google Maps",
-      notes: "Opens nearby options based on what you typed.",
+      notes: "Opens map results based on what you typed.",
       links: [{ label: "Open map results", url: makeMapsUrl(query) }],
     };
   });
@@ -256,24 +517,34 @@ function renderResourceList(resources) {
 
   return `
     <ul class="steps">
-      ${resources.map((r) => {
-        const links = Array.isArray(r.links) ? r.links : [];
-        return `
+      ${resources
+        .map((r) => {
+          const links = Array.isArray(r.links) ? r.links : [];
+          return `
           <li>
             <strong>${escapeHtml(r.name || "")}</strong>
             ${r.type ? ` — ${escapeHtml(r.type)}` : ""}
             ${r.notes ? `<div class="muted">${escapeHtml(r.notes)}</div>` : ""}
-            ${links.length ? `
-              <div style="margin-top:6px; display:flex; gap:10px; flex-wrap:wrap;">
-                ${links.map((l) => `
-                  <a class="link" href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer">
-                    ${escapeHtml(l.label)}
-                  </a>
-                `).join("")}
-              </div>` : ""}
+            ${
+              links.length
+                ? `<div style="margin-top:6px; display:flex; gap:10px; flex-wrap:wrap;">
+                    ${links
+                      .map(
+                        (l) => `
+                      <a class="link" href="${escapeHtml(
+                        l.url
+                      )}" target="_blank" rel="noopener noreferrer">
+                        ${escapeHtml(l.label)}
+                      </a>`
+                      )
+                      .join("")}
+                  </div>`
+                : ""
+            }
           </li>
         `;
-      }).join("")}
+        })
+        .join("")}
     </ul>
   `;
 }
@@ -282,8 +553,11 @@ function renderResourceList(resources) {
 const CHAT_KEY = "compass_chat_history_v1";
 
 function loadChats() {
-  try { return JSON.parse(localStorage.getItem(CHAT_KEY) || "[]"); }
-  catch { return []; }
+  try {
+    return JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
+  } catch {
+    return [];
+  }
 }
 
 function saveChats(chats) {
@@ -304,10 +578,11 @@ function renderChatHistory() {
   const chats = loadChats();
 
   const filtered = q
-    ? chats.filter((c) =>
-        (c.title || "").toLowerCase().includes(q) ||
-        (c.text || "").toLowerCase().includes(q) ||
-        (c.campusLabel || "").toLowerCase().includes(q)
+    ? chats.filter(
+        (c) =>
+          (c.title || "").toLowerCase().includes(q) ||
+          (c.text || "").toLowerCase().includes(q) ||
+          (c.campusLabel || "").toLowerCase().includes(q)
       )
     : chats;
 
@@ -316,7 +591,9 @@ function renderChatHistory() {
     return;
   }
 
-  historyEl.innerHTML = filtered.map((c) => `
+  historyEl.innerHTML = filtered
+    .map(
+      (c) => `
     <div class="chatItem chatClickable" data-chat-id="${escapeHtml(c.id)}">
       <div class="meta">
         <span>${escapeHtml(c.campusLabel || "No campus")}</span>
@@ -325,7 +602,9 @@ function renderChatHistory() {
       <div style="margin-top:6px;"><strong>${escapeHtml(c.title || "")}</strong></div>
       <div class="muted" style="margin-top:4px;">Click to reopen</div>
     </div>
-  `).join("");
+  `
+    )
+    .join("");
 
   historyEl.querySelectorAll(".chatClickable").forEach((el) => {
     el.addEventListener("click", () => {
@@ -352,7 +631,9 @@ window.renderChatHistory = renderChatHistory;
 
 window.exportChats = function exportChats() {
   const chats = loadChats();
-  const blob = new Blob([JSON.stringify(chats, null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(chats, null, 2)], {
+    type: "application/json",
+  });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -381,35 +662,50 @@ window.analyze = async function analyze() {
   }
 
   const campusKey = getSelectedCampusKey();
-  const dir = getCampusDirectory();
-  const campusLabel = campusKey && dir[campusKey] ? dir[campusKey].displayName : "";
+  const showCampus = Boolean(campusKey);
 
-  const campusRecs = buildCampusRecommendations(campusKey, text);
+  const dir = getCampusDirectory();
+  const campusLabel = showCampus && dir[campusKey] ? dir[campusKey].displayName : "";
+
+  // Campus recs ONLY if a campus is selected
+  const campusRecs = showCampus ? buildCampusRecommendations(campusKey, text) : [];
 
   // triggers browser prompt IF served via http(s)
   const geo = await getGeoIfAllowed();
 
+  // Outside recs always show (maps)
   const outside = buildOutsideResources({
     text,
     campusKey,
     customCampusName: window.customCampusName || "",
-    geo
+    geo,
   });
+
+  const matchedTags = getMatchedTags(text);
+  const tagChips = Array.from(matchedTags)
+    .slice(0, 4)
+    .map((t) => `<div class="tag">${escapeHtml(TAGS[t] || t.replaceAll("_", " "))}</div>`)
+    .join("");
 
   const header = `
     <div class="chatItem">
       <strong>Finding the right support…</strong>
-      <p class="muted">Campus links + nearby options based on what you typed.</p>
+      <p class="muted">Nearby links are map-based. Campus links appear only if you choose a campus.</p>
       ${geo ? `<div class="tag">Location enabled</div>` : `<div class="tag">Location not shared</div>`}
+      <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">
+        ${tagChips}
+      </div>
     </div>
   `;
 
-  const campusBlock = `
-    <div class="card">
-      <h3>Campus resources${campusLabel ? ` — ${escapeHtml(campusLabel)}` : ""}</h3>
-      ${renderResourceList(campusRecs)}
-    </div>
-  `;
+  const campusBlock = showCampus
+    ? `
+      <div class="card">
+        <h3>Campus resources${campusLabel ? ` — ${escapeHtml(campusLabel)}` : ""}</h3>
+        ${renderResourceList(campusRecs)}
+      </div>
+    `
+    : "";
 
   const outsideBlock = `
     <div class="card">
@@ -420,7 +716,7 @@ window.analyze = async function analyze() {
 
   const disclaimer = `
     <div class="disclaimer" style="margin-top:14px;">
-      For emergencies, use the Emergency tab. This tool provides guidance and links.
+      For emergencies, use the Emergency tab. This tool provides guidance + links.
     </div>
   `;
 
@@ -436,8 +732,10 @@ window.analyze = async function analyze() {
     title: makeChatTitle(text),
     text,
     campusKey: campusKey || "",
-    campusLabel: campusLabel || (window.customCampusName ? `“${window.customCampusName}”` : "No campus"),
-    outputHtml: html
+    campusLabel:
+      campusLabel ||
+      (window.customCampusName ? `“${window.customCampusName}”` : "No campus"),
+    outputHtml: html,
   });
   saveChats(chats);
   renderChatHistory();
