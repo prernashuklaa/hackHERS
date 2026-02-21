@@ -56,6 +56,7 @@ const KEYWORD_TAG_MAP = {
 
   // Financial
   "money": "financial_support",
+  "financial": "financial_support",
   "rent": "financial_support",
   "bills": "financial_support",
   "tuition": "financial_support",
