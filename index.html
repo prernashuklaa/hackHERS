@@ -35,7 +35,7 @@
       <!-- LEFT (BIG): Guidance -->
       <div class="panel panel-main">
         <h2>Get guidance</h2>
-        <p class="muted">Use plain language. Example: “I’m overwhelmed with classes and can’t focus.”</p>
+        <p class="muted">Use plain language. Example: “I’m doing bad in school and need tutoring.”</p>
 
         <label class="muted" for="campusSelect" style="display:block; margin-top:10px;">
           Choose your campus (optional):
@@ -45,9 +45,9 @@
           <option value="">No campus selected</option>
           <option value="rutgers_nb">Rutgers — New Brunswick</option>
           <option value="rutgers_nk">Rutgers — Newark</option>
-          <option value="nyu">NYU</option>
+          <option value="nyu">New York University</option>
         </select>
-        
+
         <div class="row" style="margin-top:8px;">
           <input
             id="campusSearch"
@@ -57,7 +57,6 @@
           <button class="smallBtn" onclick="confirmCampusSearch()">Search</button>
         </div>
 
-        
         <p id="campusHint" class="muted" style="margin-top:8px;"></p>
 
         <textarea id="inputBox" placeholder="What’s going on?"></textarea>
@@ -77,10 +76,10 @@
         <input
           id="searchBox"
           class="searchBox"
-          placeholder="Search chats (ex: anxiety, tutoring, money)…"
+          placeholder="Search chats (ex: tutoring, money, anxiety)…"
           oninput="renderChatHistory()"
         />
-      
+
         <p class="muted" style="margin-top:10px;">
           Click a chat to reopen the recommendations.
         </p>
