@@ -1,6 +1,7 @@
 window.CAMPUS_DIRECTORY = {
   "rutgers_nb": {
     displayName: "Rutgers — New Brunswick",
+    keywords: ["rutgers", "nb", "rutgers university"],
     resources: [
     // add later
     ]
@@ -30,6 +31,7 @@ window.CAMPUS_DIRECTORY = {
   },
   "nyu": {
     displayName: "New York University",
+    keywords: ["nyu", "ny", "new york"],
     resources: [
       {
         name: "NYU Wellness Center",
