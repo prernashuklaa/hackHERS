@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Compass — Emergency</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=3" />
 </head>
 <body>
   <div class="container">
@@ -16,9 +16,14 @@
       </div>
 
       <div class="nav">
-        <a class="navLink" href="index.html">Home</a>
-        <a class="navLink" href="emergency.html">Emergency</a>
-      </div>
+  <a class="navLink" href="index.html">Home</a>
+  <a class="navLink" href="emergency.html">Emergency</a>
+
+  <button class="themeToggle" id="themeToggle" type="button" onclick="toggleTheme()">
+    <span class="toggleIcon" aria-hidden="true">🌙</span>
+    <span class="toggleText">Dark</span>
+  </button>
+</div>
     </div>
 
     <div class="card">
