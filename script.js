@@ -2,8 +2,30 @@
 // Stores chats in localStorage (works on GitHub Pages without a backend)
 
 const STORAGE_KEY = "compass_chats_v2";
+const THEME_KEY = "compass_theme_v1";
 
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  const btn = document.getElementById("themeToggle");
+  if (btn) {
+    const icon = btn.querySelector(".toggleIcon");
+    const text = btn.querySelector(".toggleText");
+    const isDark = theme === "dark";
+    if (icon) icon.textContent = isDark ? "☀️" : "🌙";
+    if (text) text.textContent = isDark ? "Light" : "Dark";
+  }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") || "light";
+  const next = current === "dark" ? "light" : "dark";
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+}
 window.addEventListener("load", () => {
+  const saved = localStorage.getItem(THEME_KEY) || "light";
+  applyTheme(saved);
+
   renderCampusHint();
   renderChatHistory();
 });
