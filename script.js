@@ -1,15 +1,59 @@
-// Compass - script.js (with chat storage + search)
+// Compass - script.js (with chat storage + search + campus resources)
 // Stores chats in localStorage so it works on GitHub Pages without a backend.
 
 const STORAGE_KEY = "compass_chats_v1";
 
 window.addEventListener("load", () => {
+  renderCampusHint();
   renderChatHistory();
 });
 
 function clearInput() {
   document.getElementById("inputBox").value = "";
 }
+
+/* ---------------- Campus helpers ---------------- */
+
+function getSelectedCampusKey() {
+  const el = document.getElementById("campusSelect");
+  return el ? el.value : "";
+}
+
+function renderCampusHint() {
+  const key = getSelectedCampusKey();
+  const hintEl = document.getElementById("campusHint");
+  if (!hintEl) return;
+
+  if (!key) {
+    hintEl.textContent = "Tip: selecting a campus shows on-campus offices first.";
+    return;
+  }
+
+  const campus = CAMPUS_DIRECTORY?.[key];
+  hintEl.textContent = campus
+    ? `Showing on-campus options for ${campus.displayName}.`
+    : "Campus selected.";
+}
+
+function buildCampusRecommendations(campusKey, categories) {
+  if (!campusKey) return [];
+  const campus = CAMPUS_DIRECTORY?.[campusKey];
+  if (!campus || !Array.isArray(campus.resources)) return [];
+
+  // match resources whose tags overlap with categories
+  const hits = campus.resources.filter((r) =>
+    (r.tags || []).some((tag) => categories.includes(tag))
+  );
+
+  // If none matched, show up to 2 general “start here” campus resources if present
+  if (hits.length === 0) {
+    return campus.resources.slice(0, 2);
+  }
+
+  return hits.slice(0, 4);
+}
+
+/* ---------------- Main analyze flow ---------------- */
 
 function analyze() {
   const inputEl = document.getElementById("inputBox");
@@ -24,22 +68,25 @@ function analyze() {
   outputEl.innerHTML = `
     <div class="chatItem">
       <strong>Finding the right support…</strong>
-      <p class="muted">Matching your situation to resources near you.</p>
+      <p class="muted">Matching your situation to on-campus and nearby resources.</p>
     </div>
   `;
 
   const matches = categorize(text);
   const recs = buildRecommendations(matches);
 
+  const campusKey = getSelectedCampusKey();
+  const campusRecs = buildCampusRecommendations(campusKey, matches);
+
   getLocation()
     .then((loc) => {
-      renderResults(outputEl, text, recs, loc);
-      saveChat(text, matches, recs);
+      renderResults(outputEl, text, recs, campusRecs, campusKey, loc);
+      saveChat(text, matches, recs, campusKey);
       renderChatHistory();
     })
     .catch(() => {
-      renderResults(outputEl, text, recs, null);
-      saveChat(text, matches, recs);
+      renderResults(outputEl, text, recs, campusRecs, campusKey, null);
+      saveChat(text, matches, recs, campusKey);
       renderChatHistory();
     });
 }
@@ -58,11 +105,10 @@ function saveChats(chats) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
 }
 
-function saveChat(userText, categories, recs) {
+function saveChat(userText, categories, recs, campusKey) {
   const chats = loadChats();
   const now = new Date();
 
-  // short summary: first recommendation title
   const summary = recs?.[0]?.title ? recs[0].title : "Support recommendations";
 
   chats.unshift({
@@ -70,12 +116,11 @@ function saveChat(userText, categories, recs) {
     createdAt: now.toISOString(),
     userText,
     categories,
-    summary
+    summary,
+    campusKey: campusKey || ""
   });
 
-  // keep history lightweight
   if (chats.length > 30) chats.length = 30;
-
   saveChats(chats);
 }
 
@@ -87,7 +132,11 @@ function renderChatHistory() {
   const chats = loadChats();
 
   const filtered = chats.filter((c) => {
-    const blob = `${c.userText} ${c.summary} ${(c.categories || []).join(" ")}`.toLowerCase();
+    const campusName = c.campusKey && CAMPUS_DIRECTORY?.[c.campusKey]
+      ? CAMPUS_DIRECTORY[c.campusKey].displayName
+      : "";
+
+    const blob = `${c.userText} ${c.summary} ${(c.categories || []).join(" ")} ${campusName}`.toLowerCase();
     return !q || blob.includes(q);
   });
 
@@ -99,10 +148,15 @@ function renderChatHistory() {
   historyEl.innerHTML = filtered
     .map((c) => {
       const dt = new Date(c.createdAt);
+
+      const campusLabel = c.campusKey && CAMPUS_DIRECTORY?.[c.campusKey]
+        ? ` • ${CAMPUS_DIRECTORY[c.campusKey].displayName}`
+        : "";
+
       return `
         <div class="chatItem">
           <div class="meta">
-            <span>${escapeHtml(dt.toLocaleString())}</span>
+            <span>${escapeHtml(dt.toLocaleString())}${escapeHtml(campusLabel)}</span>
             <span>${escapeHtml(c.summary)}</span>
           </div>
           <p style="margin:10px 0 0 0;">“${escapeHtml(c.userText)}”</p>
@@ -147,7 +201,7 @@ function exportChats() {
   URL.revokeObjectURL(url);
 }
 
-/* ---------------- Matching logic (same as before, shortened) ---------------- */
+/* ---------------- Matching logic ---------------- */
 
 function categorize(text) {
   const t = text.toLowerCase();
@@ -253,7 +307,6 @@ function buildRecommendations(categories) {
     }
   };
 
-  // prioritize crisis
   const ordered = [...categories].sort((a, b) => (a === "crisis" ? -1 : b === "crisis" ? 1 : 0));
   return ordered.map((k) => library[k]).filter(Boolean).slice(0, 4);
 }
@@ -271,8 +324,27 @@ function getLocation() {
   });
 }
 
-function renderResults(outputEl, userText, recs, loc) {
-  const cards = recs.map((r) => {
+function renderResults(outputEl, userText, recs, campusRecs, campusKey, loc) {
+  const campus = campusKey && CAMPUS_DIRECTORY?.[campusKey] ? CAMPUS_DIRECTORY[campusKey] : null;
+
+  const campusSection = (campusRecs && campusRecs.length > 0)
+    ? `
+      <div class="card">
+        <h3>On-campus options${campus ? ` — ${escapeHtml(campus.displayName)}` : ""}</h3>
+        <ul class="steps">
+          ${campusRecs.map(r => `
+            <li>
+              <strong>${escapeHtml(r.name)}</strong> — ${escapeHtml(r.type || "Campus resource")}
+              ${r.notes ? `<div class="muted">${escapeHtml(r.notes)}</div>` : ""}
+              ${r.url ? `<div style="margin-top:6px;"><a href="${r.url}" target="_blank" rel="noopener noreferrer">Open site</a></div>` : ""}
+            </li>
+          `).join("")}
+        </ul>
+      </div>
+    `
+    : "";
+
+  const offCampusCards = recs.map((r) => {
     const mapsLink = buildMapsLink(r.searchQuery, loc);
     return `
       <div class="card">
@@ -293,11 +365,23 @@ function renderResults(outputEl, userText, recs, loc) {
       <strong>Note:</strong> Compass provides informational guidance, not medical or legal advice.
       If you feel unsafe or in immediate danger, seek urgent help right away.
     </div>
+
     <div class="chatItem" style="margin-top:12px;">
-      <div class="meta"><span>Your message</span><span>Saved to history</span></div>
+      <div class="meta">
+        <span>Your message${campus ? ` • ${escapeHtml(campus.displayName)}` : ""}</span>
+        <span>Saved to history</span>
+      </div>
       <p style="margin:10px 0 0 0;">“${escapeHtml(userText)}”</p>
     </div>
-    ${cards}
+
+    ${campusSection}
+
+    <div class="card">
+      <h3>Off-campus options nearby</h3>
+      <p class="muted">These are broader community resources you can access near your location.</p>
+    </div>
+
+    ${offCampusCards}
   `;
 }
 
