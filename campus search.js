@@ -1,12 +1,13 @@
 /* =========================
    CAMPUS SEARCH
 ========================= */
-
+console.log("campusSearch.js loaded");
 window.confirmCampusSearch = function confirmCampusSearch() {
-  const input = document.getElementById("campusSearch");
-  const select = document.getElementById("campusSelect");
-  const hintEl = document.getElementById("campusHint");
-  const dir = getCampusDirectory();
+   console.log("Search button clicked");
+   const input = document.getElementById("campusSearch");
+   const select = document.getElementById("campusSelect");
+   const hintEl = document.getElementById("campusHint");
+   const dir = getCampusDirectory();
 
   const keyword = (input?.value || "").trim().toLowerCase();
 
