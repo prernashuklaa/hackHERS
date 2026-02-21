@@ -16,6 +16,7 @@ window.confirmCampusSearch = function confirmCampusSearch() {
   select.innerHTML = `<option value="">No campus selected</option>`;
   window.customCampusName = "";
 
+  hintEl.classList.remove("no-results-active");
   if (!keyword) {
     hintEl.textContent = "Please enter a school name to search.";
     return;
@@ -30,6 +31,9 @@ window.confirmCampusSearch = function confirmCampusSearch() {
   if (!matches.length) {
     hintEl.textContent = `No schools found matching “${input.value}”.`;
     window.customCampusName = input.value;
+
+    void hintEl.offsetWidth; 
+    hintEl.classList.add("no-results-active");
     return;
   }
 
@@ -63,3 +67,4 @@ window.renderCampusHint = function renderCampusHint() {
     hintEl.textContent = "Tip: selecting a campus shows on-campus offices first.";
   }
 };
+
