@@ -1,6 +1,11 @@
 // ============================
-// script.js — Compass Support (FULL, FIXED)
-// Fixes intent detection so food/health/fun no longer fall into tutoring.
+// script.js — Compass Support (FULL, FIXED — LONG VERSION)
+// Fixes:
+// ✅ food/health/fun no longer fall into tutoring
+// ✅ campus resources work reliably (wildcards + tag fallback)
+// ✅ campus key selection works even if <option value> is a label
+//
+// Keeps:
 // - Theme toggle works + persists
 // - Saved chats clickable
 // - Campus resources ONLY show if a campus is selected
@@ -12,9 +17,30 @@ function getCampusDirectory() {
   return window.CAMPUS_DIRECTORY || {};
 }
 
+// Robust campus key resolver:
+// Works if <option value> is the key ("rutgers_nb") OR the label ("Rutgers — New Brunswick")
 function getSelectedCampusKey() {
   const el = document.getElementById("campusSelect");
-  return el ? el.value : "";
+  if (!el) return "";
+
+  const dir = getCampusDirectory();
+
+  const raw = (el.value || "").trim();
+  if (!raw) return "";
+
+  // Case A: value is already a key
+  if (dir[raw]) return raw;
+
+  // Case B: value is a displayName label
+  const byLabel = Object.keys(dir).find((k) => dir[k]?.displayName === raw);
+  if (byLabel) return byLabel;
+
+  // Case C: option text is displayName
+  const optText = (el.options?.[el.selectedIndex]?.textContent || "").trim();
+  const byText = Object.keys(dir).find((k) => dir[k]?.displayName === optText);
+  if (byText) return byText;
+
+  return "";
 }
 
 function escapeHtml(str) {
@@ -221,35 +247,95 @@ const MATCH_RULES = [
   // ===== FOOD =====
   { tag: "food_support", sub: "restaurants", weight: 10, phrases: ["places to eat", "where to eat", "food near me", "restaurant near me", "restaurants"] },
   { tag: "food_support", sub: "late_night", weight: 12, patterns: [/\b(open late|late night|open now|midnight|after 10|after 11|really late)\b/] },
-  { tag: "food_support", sub: "late_night", weight: 11, patterns: [/\b(hungry|starving|need food)\b/] },
+  { tag: "food_support", sub: "late_night", weight: 11, patterns: [/\b(hungry|starving|need food|need to eat|im hungry|i'm hungry)\b/] },
   { tag: "food_support", sub: "cheap", weight: 10, patterns: [/\b(cheap|budget|low cost|affordable)\b/] },
   { tag: "food_support", sub: "dining", weight: 9, phrases: ["dining hall", "dining halls", "campus dining", "cafeteria"] },
   { tag: "food_support", sub: "meal_plan", weight: 9, phrases: ["meal plan", "dining plan", "meal swipes"] },
+  { tag: "food_support", sub: "grocery", weight: 9, patterns: [/\b(grocer(y|ies)|grocery store|supermarket)\b/] },
   { tag: "food_support", sub: "pantry", weight: 11, patterns: [/\b(food pantry|pantry|free groceries)\b/] },
   { tag: "food_support", sub: "free_meals", weight: 11, patterns: [/\b(free food|free meals|community meal)\b/] },
 
   // ===== HEALTH =====
   { tag: "health_support", sub: "urgent", weight: 13, patterns: [/\b(chest pain|can'?t breathe|difficulty breathing|severe pain|fainting|blood)\b/] },
-  { tag: "health_support", sub: "primary", weight: 12, patterns: [/\b(stomach hurts|stomachache|nausea|throwing up|vomit|sick|fever|pain)\b/] },
+  { tag: "health_support", sub: "primary", weight: 12, patterns: [/\b(stomach hurts|stomachache|nausea|throwing up|vomit|sick|fever|pain|my stomach hurts)\b/] },
   { tag: "health_support", sub: "pharmacy", weight: 10, patterns: [/\b(pharmacy|prescription|meds|medicine)\b/] },
+  { tag: "health_support", sub: "sti", weight: 10, patterns: [/\b(sti|std)\b/] },
+  { tag: "health_support", sub: "womens", weight: 10, patterns: [/\b(women'?s health|gynecolog(y|ist)|obgyn)\b/] },
+  { tag: "health_support", sub: "vaccines", weight: 9, patterns: [/\b(vaccine|vaccination|immunization)\b/] },
+  { tag: "health_support", sub: "telehealth", weight: 9, patterns: [/\b(telehealth|virtual doctor|online appointment)\b/] },
 
   // ===== FUN / THINGS TO DO =====
   { tag: "recreation_support", sub: "default", weight: 12, patterns: [/\b(what to do|things to do|fun|bored|hang out|near campus)\b/] },
   { tag: "community_support", sub: "events", weight: 11, patterns: [/\b(events?|concert|show|festival|tonight|weekend)\b/] },
   { tag: "community_support", sub: "clubs", weight: 10, patterns: [/\b(clubs?|student orgs?|join a club|meet people|make friends)\b/] },
 
-  // ===== ACADEMIC (kept, but not default fallback anymore) =====
+  // ===== ACADEMIC (kept, but NOT default fallback) =====
   { tag: "academic_support", sub: "tutoring", weight: 10, patterns: [/\b(tutor|tutoring|learning center|help with homework)\b/] },
-  { tag: "academic_support", sub: "writing", weight: 10, patterns: [/\b(writing center|essay help|paper help)\b/] },
-  { tag: "academic_support", sub: "math", weight: 10, patterns: [/\b(math help|calc help|algebra help)\b/] },
+  { tag: "academic_support", sub: "writing", weight: 10, patterns: [/\b(writing center|essay help|paper help|writing help)\b/] },
+  { tag: "academic_support", sub: "math", weight: 10, patterns: [/\b(math help|calc help|calculus help|algebra help)\b/] },
   { tag: "academic_support", sub: "advising", weight: 9, patterns: [/\b(advising|advisor|course planning)\b/] },
+  { tag: "academic_support", sub: "library", weight: 8, patterns: [/\b(library|study space|study room)\b/] },
+  { tag: "academic_support", sub: "test_prep", weight: 8, patterns: [/\b(test prep|sat|gre|exam prep)\b/] },
+  { tag: "academic_support", sub: "disability", weight: 8, patterns: [/\b(accommodations|disability services|ods)\b/] },
 
-  // ===== MENTAL HEALTH =====
-  { tag: "mental_health", sub: "therapy", weight: 10, patterns: [/\b(therapy|counseling|counsell?or)\b/] },
-  { tag: "mental_health", sub: "stress", weight: 9, patterns: [/\b(stress|stressed|burnout|overwhelmed)\b/] },
-  { tag: "mental_health", sub: "sleep", weight: 9, patterns: [/\b(insomnia|can'?t sleep|sleep)\b/] },
+  // ===== CAREER =====
+  { tag: "career_support", sub: "resume", weight: 9, patterns: [/\b(resume|cv)\b/] },
+  { tag: "career_support", sub: "interview", weight: 9, patterns: [/\b(interview|mock interview)\b/] },
+  { tag: "career_support", sub: "internship", weight: 9, patterns: [/\b(internship|job search|apply to jobs)\b/] },
+  { tag: "career_support", sub: "networking", weight: 8, patterns: [/\b(networking|career fair)\b/] },
+  { tag: "career_support", sub: "linkedin", weight: 8, patterns: [/\b(linkedin)\b/] },
 
-  // ===== CRISIS (kept; Emergency tab handles the real callouts) =====
+  // ===== FINANCIAL =====
+  { tag: "financial_support", sub: "aid", weight: 9, patterns: [/\b(financial aid|fafsa)\b/] },
+  { tag: "financial_support", sub: "grants", weight: 9, patterns: [/\b(emergency grant|hardship grant)\b/] },
+  { tag: "financial_support", sub: "scholarships", weight: 8, patterns: [/\b(scholarship|scholarships)\b/] },
+  { tag: "financial_support", sub: "budgeting", weight: 8, patterns: [/\b(budget|budgeting)\b/] },
+  { tag: "financial_support", sub: "taxes", weight: 7, patterns: [/\b(taxes|tax prep)\b/] },
+  { tag: "financial_support", sub: "workstudy", weight: 7, patterns: [/\b(work study|work-study|campus job)\b/] },
+
+  // ===== HOUSING =====
+  { tag: "housing_support", sub: "dorm", weight: 8, patterns: [/\b(dorm|residence life)\b/] },
+  { tag: "housing_support", sub: "apartments", weight: 8, patterns: [/\b(apartment|apartments)\b/] },
+  { tag: "housing_support", sub: "roommate", weight: 7, patterns: [/\b(roommate)\b/] },
+  { tag: "housing_support", sub: "sublease", weight: 7, patterns: [/\b(sublease|sublet)\b/] },
+  { tag: "housing_support", sub: "tenant", weight: 7, patterns: [/\b(tenant rights|renter rights)\b/] },
+  { tag: "housing_support", sub: "moving", weight: 6, patterns: [/\b(moving|movers)\b/] },
+
+  // ===== TRANSPORT =====
+  { tag: "transport_support", sub: "shuttle", weight: 8, patterns: [/\b(shuttle)\b/] },
+  { tag: "transport_support", sub: "bus", weight: 8, patterns: [/\b(bus|bus route|bus schedule)\b/] },
+  { tag: "transport_support", sub: "train", weight: 8, patterns: [/\b(train|train station)\b/] },
+  { tag: "transport_support", sub: "parking", weight: 7, patterns: [/\b(parking|parking permit)\b/] },
+  { tag: "transport_support", sub: "bikeshare", weight: 6, patterns: [/\b(bike share)\b/] },
+  { tag: "transport_support", sub: "bikerepair", weight: 6, patterns: [/\b(bike repair)\b/] },
+  { tag: "transport_support", sub: "rideshare", weight: 6, patterns: [/\b(uber|lyft|rideshare)\b/] },
+
+  // ===== IDENTITY =====
+  { tag: "identity_support", sub: "multicultural", weight: 7, patterns: [/\b(multicultural|cultural center)\b/] },
+  { tag: "identity_support", sub: "womens", weight: 7, patterns: [/\b(women'?s center)\b/] },
+  { tag: "identity_support", sub: "lgbtq", weight: 7, patterns: [/\b(lgbtq|queer)\b/] },
+  { tag: "identity_support", sub: "international", weight: 7, patterns: [/\b(international student|visa)\b/] },
+  { tag: "identity_support", sub: "religious", weight: 6, patterns: [/\b(mosque|temple|church|synagogue)\b/] },
+
+  // ===== LEGAL =====
+  { tag: "legal_support", sub: "legal", weight: 7, patterns: [/\b(legal aid|legal services)\b/] },
+  { tag: "legal_support", sub: "notary", weight: 6, patterns: [/\b(notary)\b/] },
+  { tag: "legal_support", sub: "immigration", weight: 7, patterns: [/\b(immigration|visa lawyer)\b/] },
+  { tag: "legal_support", sub: "appeals", weight: 6, patterns: [/\b(appeal|academic appeal)\b/] },
+
+  // ===== TECH =====
+  { tag: "tech_support", sub: "it", weight: 7, patterns: [/\b(it help|help desk|tech support)\b/] },
+  { tag: "tech_support", sub: "printing", weight: 6, patterns: [/\b(printing|printer)\b/] },
+  { tag: "tech_support", sub: "repair", weight: 6, patterns: [/\b(laptop repair|computer repair)\b/] },
+  { tag: "tech_support", sub: "wifi", weight: 6, patterns: [/\b(wifi|internet)\b/] },
+  { tag: "tech_support", sub: "study24", weight: 6, patterns: [/\b(24 hour|24-hour|late study)\b/] },
+
+  // ===== RELATIONSHIPS =====
+  { tag: "relationship_support", sub: "counseling", weight: 6, patterns: [/\b(relationship counseling)\b/] },
+  { tag: "relationship_support", sub: "mediation", weight: 6, patterns: [/\b(mediation|conflict)\b/] },
+  { tag: "relationship_support", sub: "mentoring", weight: 6, patterns: [/\b(mentor|mentoring)\b/] },
+
+  // ===== CRISIS (Emergency tab handles real callouts; still detect) =====
   { tag: "crisis", sub: "default", weight: 100, patterns: [/\b(kill myself|suicidal|self harm|self-harm)\b/] },
 ];
 
@@ -258,16 +344,13 @@ function detectIntents(text) {
   const t = normalizeText(text);
 
   const scores = new Map(); // key -> score
-  const hits = new Map(); // key -> {tag,sub,keywords:[]}
+  const hits = new Map(); // key -> {tag,sub,keyword}
 
   for (const rule of MATCH_RULES) {
-    let matched = false;
-
     if (rule.phrases) {
       for (const p of rule.phrases) {
         const np = normalizeText(p);
         if (np && t.includes(np)) {
-          matched = true;
           const key = `${rule.tag}::${rule.sub}`;
           scores.set(key, (scores.get(key) || 0) + rule.weight);
           if (!hits.has(key)) hits.set(key, { tag: rule.tag, sub: rule.sub, keyword: p });
@@ -278,16 +361,12 @@ function detectIntents(text) {
     if (rule.patterns) {
       for (const re of rule.patterns) {
         if (re.test(t)) {
-          matched = true;
           const key = `${rule.tag}::${rule.sub}`;
           scores.set(key, (scores.get(key) || 0) + rule.weight);
           if (!hits.has(key)) hits.set(key, { tag: rule.tag, sub: rule.sub, keyword: re.toString() });
         }
       }
     }
-
-    // no-op if not matched
-    void matched;
   }
 
   // If nothing matched: use social/community default (NOT academic)
@@ -309,18 +388,32 @@ function detectIntents(text) {
   return ranked;
 }
 
-// ---------- Campus matching ----------
+// ---------- Campus matching (FIXED) ----------
 function resourceMatchesIntent(resource, intent) {
+  // Preferred: structured intents
   if (Array.isArray(resource.intents)) {
-    return resource.intents.some((it) => it?.tag === intent.tag && it?.sub === intent.sub);
+    return resource.intents.some((it) => {
+      if (!it) return false;
+      if (it.tag !== intent.tag) return false;
+
+      // Wildcard behavior:
+      // - resource sub "default" matches any sub under the tag
+      // - intent sub "default" matches any resource under the tag
+      if (it.sub === "default" || intent.sub === "default") return true;
+
+      return it.sub === intent.sub;
+    });
   }
+
+  // Backward-compatible: tags only
   const tags = Array.isArray(resource.tags) ? resource.tags : [];
   if (!tags.includes(intent.tag)) return false;
 
   const subTags = Array.isArray(resource.subTags) ? resource.subTags : [];
-  if (intent.sub && intent.sub !== "default" && subTags.length) return subTags.includes(intent.sub);
+  if (!subTags.length) return true;
+  if (intent.sub === "default") return true;
 
-  return true;
+  return subTags.includes(intent.sub);
 }
 
 function buildCampusRecommendations(campusKey, intents) {
@@ -328,6 +421,7 @@ function buildCampusRecommendations(campusKey, intents) {
   const campus = dir[campusKey];
   if (!campus || !Array.isArray(campus.resources)) return [];
 
+  // Pass 1: match tag+sub with wildcard support
   const results = [];
   for (const res of campus.resources) {
     for (const it of intents) {
@@ -338,8 +432,20 @@ function buildCampusRecommendations(campusKey, intents) {
     }
   }
 
-  // If none matched campus intents, don’t swap to tutoring — just show “no matching campus resources”
-  // (off-campus section will still help)
+  // Pass 2: if none matched, do a tag-only fallback (prevents "campus is broken")
+  if (results.length === 0) {
+    const tagsWanted = new Set(intents.map((i) => i.tag));
+    for (const res of campus.resources) {
+      const resTags = Array.isArray(res.intents)
+        ? res.intents.map((x) => x?.tag).filter(Boolean)
+        : Array.isArray(res.tags)
+        ? res.tags
+        : [];
+      if (resTags.some((t) => tagsWanted.has(t))) results.push(res);
+    }
+  }
+
+  // De-dup by name
   const seen = new Set();
   return results.filter((r) => {
     const k = (r.name || "").toLowerCase();
@@ -375,21 +481,22 @@ function buildOutsideResources(intents, geo) {
   const picked = [];
   const seen = new Set();
 
-  // Helpful rule: if “hungry/food” appears, always include Restaurants + Late-night if not already included
+  // Helpful rule: if ANY food intent appears, always include Restaurants + Late-night
   const hasFood = intents.some((i) => i.tag === "food_support");
   if (hasFood) {
     for (const base of [
-      { tag: "food_support", sub: "restaurants" },
-      { tag: "food_support", sub: "late_night" },
+      { tag: "food_support", sub: "restaurants", keyword: "" },
+      { tag: "food_support", sub: "late_night", keyword: "" },
     ]) {
       const id = `${base.tag}::${base.sub}`;
       if (!seen.has(id)) {
         seen.add(id);
-        picked.push({ ...base, keyword: "" });
+        picked.push(base);
       }
     }
   }
 
+  // Fill to max 3
   for (const it of intents) {
     const id = `${it.tag}::${it.sub}`;
     if (seen.has(id)) continue;
@@ -516,7 +623,7 @@ function renderChatHistory() {
       if (inputEl) inputEl.value = chat.text || "";
 
       const select = document.getElementById("campusSelect");
-      if (select) select.value = chat.campusKey || "";
+      if (select) select.value = chat.campusKey || select.value;
 
       const outputEl = document.getElementById("output");
       if (outputEl) outputEl.innerHTML = chat.outputHtml || "";
@@ -580,7 +687,7 @@ window.analyze = async function analyze() {
   const header = `
     <div class="chatItem">
       <strong>Finding the right support…</strong>
-      <p class="muted">Results are based on what you typed (food/health/fun now route correctly).</p>
+      <p class="muted">Results are based on what you typed (food/health/fun route correctly + campus works).</p>
       ${geo ? `<div class="tag">Location enabled</div>` : `<div class="tag">Location not shared</div>`}
       <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">
         ${chips}
@@ -613,6 +720,7 @@ window.analyze = async function analyze() {
   const html = header + campusBlock + outsideBlock + disclaimer;
   outputEl.innerHTML = html;
 
+  // Save chat
   const now = new Date();
   const chats = loadChats();
   chats.unshift({
