@@ -1,128 +1,66 @@
-body {
+/* =========================
+   Compass UI — cleaner CSS
+   (same look, better layout)
+   ========================= */
+
+:root{
+  --bg: #f7f7f8;
+  --text: #222;
+  --muted: #666;
+
+  --card: #fff;
+  --soft: #f2f2f3;
+  --border: #ddd;
+
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.08);
+  --shadow-md: 0 6px 18px rgba(0,0,0,0.06);
+
+  --radius-lg: 14px;
+  --radius-md: 12px;
+  --radius-sm: 10px;
+
+  --btn: #111;
+  --warn: #fff4d6;
+}
+
+* { box-sizing: border-box; }
+
+body{
   margin: 0;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-  background-color: #f7f7f8;
-  color: #222;
+  background: var(--bg);
+  color: var(--text);
 }
 
-.container {
-  max-width: 650px;
+/* Wider container so two-column layout doesn't look empty */
+.container{
+  max-width: 960px;
   margin: 60px auto;
-  background: white;
+  background: var(--card);
   padding: 35px;
-  border-radius: 14px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
 }
 
-h1 {
-  margin-top: 0;
-  margin-bottom: 8px;
+h1{
+  margin: 0 0 8px 0;
   font-size: 28px;
 }
 
-.subtitle {
-  margin-top: 0;
-  margin-bottom: 20px;
-  color: #666;
+.subtitle{
+  margin: 0 0 20px 0;
+  color: var(--muted);
   font-size: 15px;
 }
 
-textarea {
-  width: 100%;
-  height: 130px;
-  padding: 14px;
-  font-size: 14px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  resize: none;
-  box-sizing: border-box;
-  outline: none;
-  transition: border 0.2s ease, box-shadow 0.2s ease;
-}
-
-textarea:focus {
-  border-color: #888;
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
-}
-
-button {
-  margin-top: 14px;
-  padding: 11px 18px;
-  border-radius: 10px;
-  border: none;
-  background-color: #111;
-  color: white;
-  font-size: 14px;
-  cursor: pointer;
-  transition: transform 0.1s ease, opacity 0.1s ease;
-}
-
-button:hover {
-  opacity: 0.9;
-}
-
-button:active {
-  transform: scale(0.98);
-}
-
-.output {
-  margin-top: 22px;
-  padding: 16px;
-  border-radius: 10px;
-  background-color: #f2f2f3;
-  font-size: 14px;
-}
-.card {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  margin-top: 14px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-}
-
-.disclaimer {
-  background: #fff4d6;
-  border-radius: 10px;
-  padding: 12px 14px;
+.muted{
+  color: var(--muted);
   font-size: 13px;
-  color: #333;
 }
 
-.summary {
-  margin-top: 14px;
-}
-
-.quote {
-  margin: 8px 0 0 0;
-  color: #444;
-}
-
-.why {
-  color: #555;
-}
-
-.steps {
-  margin: 10px 0 0 18px;
-  color: #333;
-}
-
-.actions {
-  margin-top: 12px;
-}
-
-.linkBtn {
-  display: inline-block;
-  text-decoration: none;
-  padding: 10px 14px;
-  border-radius: 10px;
-  background: #111;
-  color: white;
-  font-size: 14px;
-}
-/* --- Prettier UI additions --- */
-
-.header {
+/* Layout */
+.header{
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -130,32 +68,103 @@ button:active {
   margin-bottom: 18px;
 }
 
-.brand {
+.brand{
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.nav {
+.nav{
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-.nav a {
+.nav a{
   text-decoration: none;
   font-size: 13px;
-  color: #111;
-  background: #f2f2f3;
+  color: var(--btn);
+  background: var(--soft);
   padding: 8px 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
 }
 
-.nav a:hover {
-  opacity: 0.85;
+.nav a:hover{ opacity: 0.85; }
+
+.grid{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 18px;
 }
 
-.row {
+@media (min-width: 820px){
+  .grid{
+    grid-template-columns: 1fr 1fr; /* balanced columns */
+    align-items: start;
+  }
+}
+
+.panel{
+  background: var(--card);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: var(--shadow-md);
+}
+
+.panel h2{
+  margin: 0 0 10px 0;
+  font-size: 16px;
+}
+
+/* Inputs */
+textarea{
+  width: 100%;
+  height: 130px;
+  padding: 14px;
+  font-size: 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  resize: none;
+  outline: none;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+textarea:focus{
+  border-color: #888;
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+}
+
+.searchBox{
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  outline: none;
+}
+
+.searchBox:focus{
+  border-color: #888;
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+}
+
+/* Buttons */
+button{
+  margin-top: 14px;
+  padding: 11px 18px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--btn);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+button:hover{ opacity: 0.9; }
+button:active{ transform: scale(0.98); }
+
+.row{
   display: flex;
   gap: 10px;
   align-items: center;
@@ -163,77 +172,86 @@ button:active {
   flex-wrap: wrap;
 }
 
-.row button {
-  margin-top: 0;
+.row button{ margin-top: 0; }
+
+.smallBtn{
+  background: var(--soft);
+  color: var(--btn);
 }
 
-.smallBtn {
-  background: #f2f2f3;
-  color: #111;
+.smallBtn:hover{ opacity: 0.9; }
+
+/* Content blocks */
+.output{
+  margin-top: 22px;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  background: var(--soft);
+  font-size: 14px;
 }
 
-.smallBtn:hover { opacity: 0.9; }
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  margin-top: 18px;
+.card{
+  background: var(--card);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-top: 14px;
+  box-shadow: var(--shadow-md);
 }
 
-@media (min-width: 820px) {
-  .grid {
-    grid-template-columns: 1.2fr 0.8fr;
-  }
+.disclaimer{
+  background: var(--warn);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #333;
 }
 
-.panel {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 14px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+.summary{ margin-top: 14px; }
+.quote{ margin: 8px 0 0 0; color: #444; }
+.why{ color: #555; }
+
+.steps{
+  margin: 10px 0 0 18px;
+  color: #333;
 }
 
-.panel h2 {
-  margin: 0 0 10px 0;
-  font-size: 16px;
+.actions{ margin-top: 12px; }
+
+.linkBtn{
+  display: inline-block;
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--btn);
+  color: #fff;
+  font-size: 14px;
 }
 
-.muted { color: #666; font-size: 13px; }
-
-.chatItem {
+/* Chat history */
+.chatItem{
   border: 1px solid #eee;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 12px;
   margin-top: 10px;
   background: #fafafa;
 }
 
-.chatItem .meta {
+.chatItem .meta{
   display: flex;
   justify-content: space-between;
   gap: 10px;
   font-size: 12px;
-  color: #666;
+  color: var(--muted);
 }
 
-.tag {
+.tag{
   display: inline-block;
   font-size: 12px;
   padding: 4px 8px;
   border-radius: 999px;
-  background: #f2f2f3;
+  background: var(--soft);
   margin-top: 8px;
   margin-right: 6px;
-}
-
-.searchBox {
-  width: 100%;
-  padding: 12px 12px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  outline: none;
-  box-sizing: border-box;
 }
 
 .searchBox:focus {
