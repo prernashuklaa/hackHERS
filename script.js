@@ -1,7 +1,7 @@
-// Compass - script.js (with chat storage + search + campus resources)
-// Stores chats in localStorage so it works on GitHub Pages without a backend.
+// Compass - script.js
+// Stores chats in localStorage (works on GitHub Pages without a backend)
 
-const STORAGE_KEY = "compass_chats_v1";
+const STORAGE_KEY = "compass_chats_v2";
 
 window.addEventListener("load", () => {
   renderCampusHint();
@@ -40,16 +40,11 @@ function buildCampusRecommendations(campusKey, categories) {
   const campus = CAMPUS_DIRECTORY?.[campusKey];
   if (!campus || !Array.isArray(campus.resources)) return [];
 
-  // match resources whose tags overlap with categories
   const hits = campus.resources.filter((r) =>
     (r.tags || []).some((tag) => categories.includes(tag))
   );
 
-  // If none matched, show up to 2 general “start here” campus resources if present
-  if (hits.length === 0) {
-    return campus.resources.slice(0, 2);
-  }
-
+  if (hits.length === 0) return campus.resources.slice(0, 2);
   return hits.slice(0, 4);
 }
 
@@ -72,21 +67,21 @@ function analyze() {
     </div>
   `;
 
-  const matches = categorize(text);
-  const recs = buildRecommendations(matches);
+  const categories = categorize(text);
+  const recs = buildRecommendations(categories);
 
   const campusKey = getSelectedCampusKey();
-  const campusRecs = buildCampusRecommendations(campusKey, matches);
+  const campusRecs = buildCampusRecommendations(campusKey, categories);
 
   getLocation()
     .then((loc) => {
       renderResults(outputEl, text, recs, campusRecs, campusKey, loc);
-      saveChat(text, matches, recs, campusKey);
+      saveChat(text, categories, recs, campusKey);
       renderChatHistory();
     })
     .catch(() => {
       renderResults(outputEl, text, recs, campusRecs, campusKey, null);
-      saveChat(text, matches, recs, campusKey);
+      saveChat(text, categories, recs, campusKey);
       renderChatHistory();
     });
 }
@@ -117,11 +112,41 @@ function saveChat(userText, categories, recs, campusKey) {
     userText,
     categories,
     summary,
-    campusKey: campusKey || ""
+    campusKey: campusKey || "",
+    recs: recs || []
   });
 
   if (chats.length > 30) chats.length = 30;
   saveChats(chats);
+}
+
+function openChat(chatId) {
+  const chats = loadChats();
+  const chat = chats.find((c) => c.id === chatId);
+  if (!chat) return;
+
+  // restore campus selection
+  const campusSelect = document.getElementById("campusSelect");
+  if (campusSelect) {
+    campusSelect.value = chat.campusKey || "";
+    renderCampusHint();
+  }
+
+  // restore input
+  const inputEl = document.getElementById("inputBox");
+  if (inputEl) inputEl.value = chat.userText || "";
+
+  const outputEl = document.getElementById("output");
+  const categories = chat.categories || categorize(chat.userText || "");
+  const recs = Array.isArray(chat.recs) && chat.recs.length ? chat.recs : buildRecommendations(categories);
+  const campusRecs = buildCampusRecommendations(chat.campusKey || "", categories);
+
+  // render with fresh location if allowed
+  getLocation()
+    .then((loc) => renderResults(outputEl, chat.userText || "", recs, campusRecs, chat.campusKey || "", loc, true))
+    .catch(() => renderResults(outputEl, chat.userText || "", recs, campusRecs, chat.campusKey || "", null, true));
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function renderChatHistory() {
@@ -141,7 +166,7 @@ function renderChatHistory() {
   });
 
   if (filtered.length === 0) {
-    historyEl.innerHTML = `<p class="muted">No chats yet. Try getting guidance above.</p>`;
+    historyEl.innerHTML = `<p class="muted">No chats yet. Try getting guidance on the left.</p>`;
     return;
   }
 
@@ -154,12 +179,12 @@ function renderChatHistory() {
         : "";
 
       return `
-        <div class="chatItem">
+        <div class="chatItem chatClickable" onclick="openChat('${escapeAttr(c.id)}')">
           <div class="meta">
             <span>${escapeHtml(dt.toLocaleString())}${escapeHtml(campusLabel)}</span>
             <span>${escapeHtml(c.summary)}</span>
           </div>
-          <p style="margin:10px 0 0 0;">“${escapeHtml(c.userText)}”</p>
+          <p class="chatPreview">“${escapeHtml(c.userText)}”</p>
           <div>
             ${(c.categories || []).map((t) => `<span class="tag">${escapeHtml(prettyTag(t))}</span>`).join("")}
           </div>
@@ -324,7 +349,7 @@ function getLocation() {
   });
 }
 
-function renderResults(outputEl, userText, recs, campusRecs, campusKey, loc) {
+function renderResults(outputEl, userText, recs, campusRecs, campusKey, loc, isReopen = false) {
   const campus = campusKey && CAMPUS_DIRECTORY?.[campusKey] ? CAMPUS_DIRECTORY[campusKey] : null;
 
   const campusSection = (campusRecs && campusRecs.length > 0)
@@ -336,7 +361,7 @@ function renderResults(outputEl, userText, recs, campusRecs, campusKey, loc) {
             <li>
               <strong>${escapeHtml(r.name)}</strong> — ${escapeHtml(r.type || "Campus resource")}
               ${r.notes ? `<div class="muted">${escapeHtml(r.notes)}</div>` : ""}
-              ${r.url ? `<div style="margin-top:6px;"><a href="${r.url}" target="_blank" rel="noopener noreferrer">Open site</a></div>` : ""}
+              ${r.url ? `<div style="margin-top:6px;"><a class="link" href="${r.url}" target="_blank" rel="noopener noreferrer">Open site</a></div>` : ""}
             </li>
           `).join("")}
         </ul>
@@ -368,8 +393,8 @@ function renderResults(outputEl, userText, recs, campusRecs, campusKey, loc) {
 
     <div class="chatItem" style="margin-top:12px;">
       <div class="meta">
-        <span>Your message${campus ? ` • ${escapeHtml(campus.displayName)}` : ""}</span>
-        <span>Saved to history</span>
+        <span>${isReopen ? "Reopened chat" : "Your message"}${campus ? ` • ${escapeHtml(campus.displayName)}` : ""}</span>
+        <span>${isReopen ? "From saved history" : "Saved to history"}</span>
       </div>
       <p style="margin:10px 0 0 0;">“${escapeHtml(userText)}”</p>
     </div>
@@ -378,7 +403,7 @@ function renderResults(outputEl, userText, recs, campusRecs, campusKey, loc) {
 
     <div class="card">
       <h3>Off-campus options nearby</h3>
-      <p class="muted">These are broader community resources you can access near your location.</p>
+      <p class="muted">Community resources you can access near your location.</p>
     </div>
 
     ${offCampusCards}
@@ -397,6 +422,11 @@ function buildMapsLink(query, loc) {
 
 function hasAny(text, keywords) {
   return keywords.some((k) => text.includes(k));
+}
+
+function escapeAttr(str) {
+  // for putting ids inside onclick="..."
+  return String(str).replaceAll("'", "\\'");
 }
 
 function escapeHtml(str) {
