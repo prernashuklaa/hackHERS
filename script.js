@@ -26,17 +26,17 @@ function buildCampusRecommendations(campusKey, text) {
   // Map input words to resource tags
   const KEYWORD_TAG_MAP = {
     "lonely": "social_support",
-  "alone": "social_support",
-  "friends": "social_support",
-  "anxious": "mental_health",
-  "anxiety": "mental_health",
-  "depressed": "mental_health",
-  "stress": "mental_health",
-  "stressed": "mental_health",
-  "therapy": "mental_health",
-  "overwhelmed": "mental_health",
-  "panic": "mental_health",
-  "burnout": "mental_health"
+    "alone": "social_support",
+    "friends": "social_support",
+    "anxious": "mental_health",
+    "anxiety": "mental_health",
+    "depressed": "mental_health",
+    "stress": "mental_health",
+    "stressed": "mental_health",
+    "therapy": "mental_health",
+    "overwhelmed": "mental_health",
+    "panic": "mental_health",
+    "burnout": "mental_health"
   };
 
   const matchedTags = words.map(w => KEYWORD_TAG_MAP[w]).filter(Boolean);
