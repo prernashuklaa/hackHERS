@@ -2,7 +2,6 @@ window.CAMPUS_DIRECTORY = {
   "rutgers_nb": {
     displayName: "Rutgers — New Brunswick",
     resources: [
-      // Mental Health / Therapy
       {
         name: "Group Offerings",
         type: "Mental Health / Therapy",
@@ -13,16 +12,6 @@ window.CAMPUS_DIRECTORY = {
         ]
       },
       {
-        name: "Counseling Services",
-        type: "Mental Health",
-        tags: ["mental_health"],
-        notes: "Individual counseling available on campus",
-        links: [
-          { label: "Learn more", url: "https://health.rutgers.edu/counseling-services/" }
-        ]
-      },
-      // Financial Support
-      {
         name: "Financial Aid Office",
         type: "Financial Support",
         tags: ["financial_support"],
@@ -31,7 +20,6 @@ window.CAMPUS_DIRECTORY = {
           { label: "Visit Financial Aid", url: "https://financialaid.rutgers.edu/" }
         ]
       },
-      // Crisis / Suicide
       {
         name: "Crisis Hotline",
         type: "Crisis Support",
@@ -42,9 +30,8 @@ window.CAMPUS_DIRECTORY = {
           { label: "Learn more", url: "https://988lifeline.org/" }
         ]
       },
-      // Social Support
       {
-        name: "Peer Support",
+        name: "Peer Support Groups",
         type: "Social Support",
         tags: ["social_support"],
         notes: "Student peer groups and clubs",
@@ -54,7 +41,6 @@ window.CAMPUS_DIRECTORY = {
       }
     ]
   },
-
   "rutgers_nk": {
     displayName: "Rutgers — Newark",
     resources: [
@@ -69,7 +55,6 @@ window.CAMPUS_DIRECTORY = {
       }
     ]
   },
-
   "nyu": {
     displayName: "New York University",
     resources: [
