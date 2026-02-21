@@ -1,11 +1,10 @@
 // ============================
-// script.js — Compass Support (FULL)
+// script.js — Compass Support (FULL, FIXED)
+// Fixes intent detection so food/health/fun no longer fall into tutoring.
 // - Theme toggle works + persists
 // - Saved chats clickable
 // - Campus resources ONLY show if a campus is selected
-// - Uses INTENTS (tag + sub-intent) to produce SPECIFIC suggestions
-// - Off-campus results are Google Maps links based on the matched intent/sub-intent
-// - Food now includes dining halls + meal plans + restaurants + cheap + late-night + pantry/free food
+// - Intent detection uses robust phrase + regex patterns + scoring
 // ============================
 
 // ---------- Helpers ----------
@@ -25,6 +24,16 @@ function escapeHtml(str) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+// Normalize text for matching
+function normalizeText(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/[\u2019']/g, "'") // normalize apostrophes
+    .replace(/[^a-z0-9\s']/g, " ") // remove punctuation
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 // ---------- Theme ----------
@@ -50,7 +59,6 @@ function initTheme() {
   applyTheme(saved || "light");
 }
 
-// GLOBAL for onclick
 window.toggleTheme = function toggleTheme() {
   const current = document.documentElement.getAttribute("data-theme") || "light";
   const next = current === "dark" ? "light" : "dark";
@@ -58,7 +66,7 @@ window.toggleTheme = function toggleTheme() {
   applyTheme(next);
 };
 
-// ---------- INTENTS: tag + sub-intent (this is the core of “more specific” results) ----------
+// ---------- INTENTS: tag + sub-intent ----------
 const INTENTS = {
   mental_health: {
     therapy: { label: "Therapy & counseling", mapsQuery: "therapy counseling center near me" },
@@ -92,7 +100,7 @@ const INTENTS = {
     meal_plan: { label: "Meal plans / dining plans", mapsQuery: "college meal plan office near me" },
     restaurants: { label: "Restaurants nearby", mapsQuery: "restaurants near me" },
     cheap: { label: "Cheap eats", mapsQuery: "cheap food near me" },
-    late_night: { label: "Late-night food", mapsQuery: "late night food near me" },
+    late_night: { label: "Late-night food", mapsQuery: "late night food near me open now" },
     grocery: { label: "Grocery stores", mapsQuery: "grocery store near me" },
     pantry: { label: "Food pantry", mapsQuery: "food pantry near me" },
     free_meals: { label: "Free meals", mapsQuery: "free meal near me community meal" },
@@ -105,10 +113,10 @@ const INTENTS = {
   },
 
   academic_support: {
-    tutoring: { label: "Tutoring / learning centers", mapsQuery: "tutoring center near me Kumon Sylvan tutoring" },
-    writing: { label: "Writing help", mapsQuery: "writing tutor near me writing center" },
+    tutoring: { label: "Tutoring / learning centers", mapsQuery: "tutoring center near me" },
+    writing: { label: "Writing help", mapsQuery: "writing center near me" },
     math: { label: "Math help", mapsQuery: "math tutor near me" },
-    advising: { label: "Academic advising", mapsQuery: "academic advising near me college advising" },
+    advising: { label: "Academic advising", mapsQuery: "academic advising near me" },
     disability: { label: "Disability accommodations", mapsQuery: "disability services office near me" },
     library: { label: "Library / study spaces", mapsQuery: "library near me study room" },
     test_prep: { label: "Test prep", mapsQuery: "test prep center near me" },
@@ -179,7 +187,7 @@ const INTENTS = {
     yoga: { label: "Yoga / meditation", mapsQuery: "yoga meditation near me" },
     intramural: { label: "Intramural sports", mapsQuery: "intramural sports near me" },
     outdoors: { label: "Outdoor spaces", mapsQuery: "parks trails near me" },
-    default: { label: "Wellness & recreation", mapsQuery: "fitness classes near me" },
+    default: { label: "Things to do / recreation", mapsQuery: "things to do near me" },
   },
 
   tech_support: {
@@ -193,10 +201,10 @@ const INTENTS = {
 
   community_support: {
     clubs: { label: "Clubs & student orgs", mapsQuery: "student clubs near me" },
-    events: { label: "Campus/community events", mapsQuery: "events near me" },
+    events: { label: "Campus/community events", mapsQuery: "events near me tonight" },
     volunteer: { label: "Volunteer opportunities", mapsQuery: "volunteer opportunities near me" },
     faith: { label: "Faith-based groups", mapsQuery: "faith groups near me" },
-    default: { label: "Social connection", mapsQuery: "community groups near me" },
+    default: { label: "Social connection / community", mapsQuery: "community groups near me" },
   },
 
   relationship_support: {
@@ -208,216 +216,110 @@ const INTENTS = {
   },
 };
 
-// ---------- Keyword → (tag, sub) mapping (MOST IMPORTANT FOR SPECIFICITY) ----------
-const KEYWORD_INTENT_MAP = {
-  // --- Dining / food (your request) ---
-  "dining hall": { tag: "food_support", sub: "dining" },
-  "dining halls": { tag: "food_support", sub: "dining" },
-  cafeteria: { tag: "food_support", sub: "dining" },
-  "campus dining": { tag: "food_support", sub: "dining" },
-  "meal plan": { tag: "food_support", sub: "meal_plan" },
-  "dining plan": { tag: "food_support", sub: "meal_plan" },
-  "meal swipes": { tag: "food_support", sub: "meal_plan" },
-  "where can i eat": { tag: "food_support", sub: "restaurants" },
-  "places to eat": { tag: "food_support", sub: "restaurants" },
-  restaurants: { tag: "food_support", sub: "restaurants" },
-  "cheap food": { tag: "food_support", sub: "cheap" },
-  "cheap eats": { tag: "food_support", sub: "cheap" },
-  "late night food": { tag: "food_support", sub: "late_night" },
-  "late-night food": { tag: "food_support", sub: "late_night" },
-  groceries: { tag: "food_support", sub: "grocery" },
-  "grocery store": { tag: "food_support", sub: "grocery" },
-  "food pantry": { tag: "food_support", sub: "pantry" },
-  "free food": { tag: "food_support", sub: "free_meals" },
-  "free meals": { tag: "food_support", sub: "free_meals" },
-  halal: { tag: "food_support", sub: "halal" },
-  kosher: { tag: "food_support", sub: "kosher" },
-  vegan: { tag: "food_support", sub: "vegan" },
-  vegetarian: { tag: "food_support", sub: "vegetarian" },
-  snap: { tag: "food_support", sub: "snap" },
-  ebt: { tag: "food_support", sub: "snap" },
+// ---------- Robust matching rules (phrases + patterns with weights) ----------
+const MATCH_RULES = [
+  // ===== FOOD =====
+  { tag: "food_support", sub: "restaurants", weight: 10, phrases: ["places to eat", "where to eat", "food near me", "restaurant near me", "restaurants"] },
+  { tag: "food_support", sub: "late_night", weight: 12, patterns: [/\b(open late|late night|open now|midnight|after 10|after 11|really late)\b/] },
+  { tag: "food_support", sub: "late_night", weight: 11, patterns: [/\b(hungry|starving|need food)\b/] },
+  { tag: "food_support", sub: "cheap", weight: 10, patterns: [/\b(cheap|budget|low cost|affordable)\b/] },
+  { tag: "food_support", sub: "dining", weight: 9, phrases: ["dining hall", "dining halls", "campus dining", "cafeteria"] },
+  { tag: "food_support", sub: "meal_plan", weight: 9, phrases: ["meal plan", "dining plan", "meal swipes"] },
+  { tag: "food_support", sub: "pantry", weight: 11, patterns: [/\b(food pantry|pantry|free groceries)\b/] },
+  { tag: "food_support", sub: "free_meals", weight: 11, patterns: [/\b(free food|free meals|community meal)\b/] },
 
-  // --- Academic ---
-  tutoring: { tag: "academic_support", sub: "tutoring" },
-  tutor: { tag: "academic_support", sub: "tutoring" },
-  "writing center": { tag: "academic_support", sub: "writing" },
-  "writing help": { tag: "academic_support", sub: "writing" },
-  "math help": { tag: "academic_support", sub: "math" },
-  "academic advising": { tag: "academic_support", sub: "advising" },
-  advising: { tag: "academic_support", sub: "advising" },
-  accommodations: { tag: "academic_support", sub: "disability" },
-  "disability accommodations": { tag: "academic_support", sub: "disability" },
-  library: { tag: "academic_support", sub: "library" },
-  "study room": { tag: "academic_support", sub: "library" },
-  "study rooms": { tag: "academic_support", sub: "library" },
-  "test prep": { tag: "academic_support", sub: "test_prep" },
-  failing: { tag: "academic_support", sub: "default" },
-  grades: { tag: "academic_support", sub: "default" },
-  gpa: { tag: "academic_support", sub: "default" },
-  "bad in school": { tag: "academic_support", sub: "default" },
-  "can't focus": { tag: "academic_support", sub: "default" },
-  "cant focus": { tag: "academic_support", sub: "default" },
+  // ===== HEALTH =====
+  { tag: "health_support", sub: "urgent", weight: 13, patterns: [/\b(chest pain|can'?t breathe|difficulty breathing|severe pain|fainting|blood)\b/] },
+  { tag: "health_support", sub: "primary", weight: 12, patterns: [/\b(stomach hurts|stomachache|nausea|throwing up|vomit|sick|fever|pain)\b/] },
+  { tag: "health_support", sub: "pharmacy", weight: 10, patterns: [/\b(pharmacy|prescription|meds|medicine)\b/] },
 
-  // --- Transportation ---
-  shuttle: { tag: "transport_support", sub: "shuttle" },
-  "shuttle schedule": { tag: "transport_support", sub: "shuttle" },
-  "bus routes": { tag: "transport_support", sub: "bus" },
-  bus: { tag: "transport_support", sub: "bus" },
-  train: { tag: "transport_support", sub: "train" },
-  "train station": { tag: "transport_support", sub: "train" },
-  parking: { tag: "transport_support", sub: "parking" },
-  "parking permit": { tag: "transport_support", sub: "parking" },
-  "bike share": { tag: "transport_support", sub: "bikeshare" },
-  "bike repair": { tag: "transport_support", sub: "bikerepair" },
-  uber: { tag: "transport_support", sub: "rideshare" },
-  lyft: { tag: "transport_support", sub: "rideshare" },
+  // ===== FUN / THINGS TO DO =====
+  { tag: "recreation_support", sub: "default", weight: 12, patterns: [/\b(what to do|things to do|fun|bored|hang out|near campus)\b/] },
+  { tag: "community_support", sub: "events", weight: 11, patterns: [/\b(events?|concert|show|festival|tonight|weekend)\b/] },
+  { tag: "community_support", sub: "clubs", weight: 10, patterns: [/\b(clubs?|student orgs?|join a club|meet people|make friends)\b/] },
 
-  // --- Mental health ---
-  anxious: { tag: "mental_health", sub: "default" },
-  anxiety: { tag: "mental_health", sub: "default" },
-  depressed: { tag: "mental_health", sub: "default" },
-  depression: { tag: "mental_health", sub: "default" },
-  therapy: { tag: "mental_health", sub: "therapy" },
-  counseling: { tag: "mental_health", sub: "therapy" },
-  "group therapy": { tag: "mental_health", sub: "group" },
-  "support group": { tag: "mental_health", sub: "group" },
-  stressed: { tag: "mental_health", sub: "stress" },
-  stress: { tag: "mental_health", sub: "stress" },
-  burnout: { tag: "mental_health", sub: "stress" },
-  insomnia: { tag: "mental_health", sub: "sleep" },
-  "cant sleep": { tag: "mental_health", sub: "sleep" },
-  "can't sleep": { tag: "mental_health", sub: "sleep" },
+  // ===== ACADEMIC (kept, but not default fallback anymore) =====
+  { tag: "academic_support", sub: "tutoring", weight: 10, patterns: [/\b(tutor|tutoring|learning center|help with homework)\b/] },
+  { tag: "academic_support", sub: "writing", weight: 10, patterns: [/\b(writing center|essay help|paper help)\b/] },
+  { tag: "academic_support", sub: "math", weight: 10, patterns: [/\b(math help|calc help|algebra help)\b/] },
+  { tag: "academic_support", sub: "advising", weight: 9, patterns: [/\b(advising|advisor|course planning)\b/] },
 
-  // --- Health ---
-  "urgent care": { tag: "health_support", sub: "urgent" },
-  pharmacy: { tag: "health_support", sub: "pharmacy" },
-  prescription: { tag: "health_support", sub: "pharmacy" },
-  "sti testing": { tag: "health_support", sub: "sti" },
-  "std testing": { tag: "health_support", sub: "sti" },
-  "women's health": { tag: "health_support", sub: "womens" },
-  vaccinations: { tag: "health_support", sub: "vaccines" },
-  vaccination: { tag: "health_support", sub: "vaccines" },
-  telehealth: { tag: "health_support", sub: "telehealth" },
+  // ===== MENTAL HEALTH =====
+  { tag: "mental_health", sub: "therapy", weight: 10, patterns: [/\b(therapy|counseling|counsell?or)\b/] },
+  { tag: "mental_health", sub: "stress", weight: 9, patterns: [/\b(stress|stressed|burnout|overwhelmed)\b/] },
+  { tag: "mental_health", sub: "sleep", weight: 9, patterns: [/\b(insomnia|can'?t sleep|sleep)\b/] },
 
-  // --- Career ---
-  resume: { tag: "career_support", sub: "resume" },
-  "resume review": { tag: "career_support", sub: "resume" },
-  interview: { tag: "career_support", sub: "interview" },
-  "mock interview": { tag: "career_support", sub: "interview" },
-  internship: { tag: "career_support", sub: "internship" },
-  networking: { tag: "career_support", sub: "networking" },
-  headshots: { tag: "career_support", sub: "headshots" },
-  linkedin: { tag: "career_support", sub: "linkedin" },
+  // ===== CRISIS (kept; Emergency tab handles the real callouts) =====
+  { tag: "crisis", sub: "default", weight: 100, patterns: [/\b(kill myself|suicidal|self harm|self-harm)\b/] },
+];
 
-  // --- Financial ---
-  "financial aid": { tag: "financial_support", sub: "aid" },
-  scholarships: { tag: "financial_support", sub: "scholarships" },
-  scholarship: { tag: "financial_support", sub: "scholarships" },
-  budgeting: { tag: "financial_support", sub: "budgeting" },
-  taxes: { tag: "financial_support", sub: "taxes" },
-  "work study": { tag: "financial_support", sub: "workstudy" },
-  "work-study": { tag: "financial_support", sub: "workstudy" },
-  rent: { tag: "financial_support", sub: "default" },
-  bills: { tag: "financial_support", sub: "default" },
-  debt: { tag: "financial_support", sub: "default" },
-
-  // --- Housing ---
-  dorm: { tag: "housing_support", sub: "dorm" },
-  housing: { tag: "housing_support", sub: "default" },
-  apartments: { tag: "housing_support", sub: "apartments" },
-  apartment: { tag: "housing_support", sub: "apartments" },
-  sublease: { tag: "housing_support", sub: "sublease" },
-  roommate: { tag: "housing_support", sub: "roommate" },
-  "tenant rights": { tag: "housing_support", sub: "tenant" },
-  "renter rights": { tag: "housing_support", sub: "tenant" },
-  "moving services": { tag: "housing_support", sub: "moving" },
-
-  // --- Identity / cultural ---
-  multicultural: { tag: "identity_support", sub: "multicultural" },
-  lgbtq: { tag: "identity_support", sub: "lgbtq" },
-  "women's center": { tag: "identity_support", sub: "womens" },
-  "international student": { tag: "identity_support", sub: "international" },
-  mosque: { tag: "identity_support", sub: "religious" },
-  temple: { tag: "identity_support", sub: "religious" },
-  church: { tag: "identity_support", sub: "religious" },
-  synagogue: { tag: "identity_support", sub: "religious" },
-
-  // --- Legal ---
-  notary: { tag: "legal_support", sub: "notary" },
-  immigration: { tag: "legal_support", sub: "immigration" },
-  "legal services": { tag: "legal_support", sub: "legal" },
-  "academic appeal": { tag: "legal_support", sub: "appeals" },
-
-  // --- Community / social ---
-  lonely: { tag: "community_support", sub: "default" },
-  alone: { tag: "community_support", sub: "default" },
-  friends: { tag: "community_support", sub: "default" },
-  clubs: { tag: "community_support", sub: "clubs" },
-  events: { tag: "community_support", sub: "events" },
-  volunteer: { tag: "community_support", sub: "volunteer" },
-
-  // --- Relationships ---
-  breakup: { tag: "relationship_support", sub: "default" },
-  mediation: { tag: "relationship_support", sub: "mediation" },
-  "conflict resolution": { tag: "relationship_support", sub: "mediation" },
-  "relationship counseling": { tag: "relationship_support", sub: "counseling" },
-
-  // --- Crisis / safety ---
-  suicidal: { tag: "crisis", sub: "default" },
-  "self harm": { tag: "crisis", sub: "default" },
-  "self-harm": { tag: "crisis", sub: "default" },
-  "kill myself": { tag: "crisis", sub: "default" },
-  unsafe: { tag: "crisis", sub: "safety" },
-  assaulted: { tag: "crisis", sub: "titleix" },
-  "title ix": { tag: "crisis", sub: "titleix" },
-  "sexual assault": { tag: "crisis", sub: "titleix" },
-  shelter: { tag: "crisis", sub: "shelter" },
-  "campus police": { tag: "crisis", sub: "police" },
-};
-
-// Detect matched intents (prioritize longer phrases so “dining hall” beats “food”)
+// Detect intents with scoring (top 1–2)
 function detectIntents(text) {
-  const t = (text || "").toLowerCase();
-  const keys = Object.keys(KEYWORD_INTENT_MAP).sort((a, b) => b.length - a.length);
+  const t = normalizeText(text);
 
-  const found = [];
-  const seen = new Set();
+  const scores = new Map(); // key -> score
+  const hits = new Map(); // key -> {tag,sub,keywords:[]}
 
-  for (const k of keys) {
-    if (!t.includes(k)) continue;
-    const intent = KEYWORD_INTENT_MAP[k];
-    const id = `${intent.tag}::${intent.sub}`;
-    if (seen.has(id)) continue;
-    seen.add(id);
-    found.push({ ...intent, keyword: k });
+  for (const rule of MATCH_RULES) {
+    let matched = false;
+
+    if (rule.phrases) {
+      for (const p of rule.phrases) {
+        const np = normalizeText(p);
+        if (np && t.includes(np)) {
+          matched = true;
+          const key = `${rule.tag}::${rule.sub}`;
+          scores.set(key, (scores.get(key) || 0) + rule.weight);
+          if (!hits.has(key)) hits.set(key, { tag: rule.tag, sub: rule.sub, keyword: p });
+        }
+      }
+    }
+
+    if (rule.patterns) {
+      for (const re of rule.patterns) {
+        if (re.test(t)) {
+          matched = true;
+          const key = `${rule.tag}::${rule.sub}`;
+          scores.set(key, (scores.get(key) || 0) + rule.weight);
+          if (!hits.has(key)) hits.set(key, { tag: rule.tag, sub: rule.sub, keyword: re.toString() });
+        }
+      }
+    }
+
+    // no-op if not matched
+    void matched;
   }
 
-  // Fallback: if nothing matched, assume academic support default
-  if (found.length === 0) {
-    found.push({ tag: "academic_support", sub: "default", keyword: "" });
+  // If nothing matched: use social/community default (NOT academic)
+  if (scores.size === 0) {
+    return [{ tag: "community_support", sub: "default", keyword: "" }];
   }
 
-  return found;
+  // Sort by score desc and pick top 2 (keeps results focused)
+  const ranked = [...scores.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .map(([key]) => hits.get(key))
+    .filter(Boolean);
+
+  // Safety: if crisis was detected, only return crisis
+  const crisisHit = ranked.find((r) => r.tag === "crisis");
+  if (crisisHit) return [crisisHit];
+
+  return ranked;
 }
 
-// ---------- Campus recommendations (supports resource.intents = [{tag, sub}] ) ----------
+// ---------- Campus matching ----------
 function resourceMatchesIntent(resource, intent) {
-  // Preferred: structured intents
   if (Array.isArray(resource.intents)) {
     return resource.intents.some((it) => it?.tag === intent.tag && it?.sub === intent.sub);
   }
-
-  // Backward-compatible: tags only
   const tags = Array.isArray(resource.tags) ? resource.tags : [];
   if (!tags.includes(intent.tag)) return false;
 
-  // If resource has subTags, use them
   const subTags = Array.isArray(resource.subTags) ? resource.subTags : [];
-  if (intent.sub && intent.sub !== "default" && subTags.length) {
-    return subTags.includes(intent.sub);
-  }
+  if (intent.sub && intent.sub !== "default" && subTags.length) return subTags.includes(intent.sub);
 
-  // If no sub info, allow tag match
   return true;
 }
 
@@ -436,13 +338,14 @@ function buildCampusRecommendations(campusKey, intents) {
     }
   }
 
-  // De-dup by name
+  // If none matched campus intents, don’t swap to tutoring — just show “no matching campus resources”
+  // (off-campus section will still help)
   const seen = new Set();
   return results.filter((r) => {
-    const key = (r.name || "").toLowerCase();
-    if (!key) return true;
-    if (seen.has(key)) return false;
-    seen.add(key);
+    const k = (r.name || "").toLowerCase();
+    if (!k) return true;
+    if (seen.has(k)) return false;
+    seen.add(k);
     return true;
   });
 }
@@ -460,7 +363,7 @@ function getGeoIfAllowed() {
   });
 }
 
-// ---------- Outside resources (maps) ----------
+// ---------- Outside resources ----------
 function makeMapsUrl(query, geo) {
   const q = encodeURIComponent(query);
   return geo?.lat && geo?.lon
@@ -469,18 +372,21 @@ function makeMapsUrl(query, geo) {
 }
 
 function buildOutsideResources(intents, geo) {
-  // Keep it useful: max 3 links
-  // Special rule: if ANY food intent appears, also include restaurants (people expect it)
   const picked = [];
   const seen = new Set();
 
+  // Helpful rule: if “hungry/food” appears, always include Restaurants + Late-night if not already included
   const hasFood = intents.some((i) => i.tag === "food_support");
   if (hasFood) {
-    const foodRest = { tag: "food_support", sub: "restaurants", keyword: "" };
-    const id = `${foodRest.tag}::${foodRest.sub}`;
-    if (!seen.has(id)) {
-      seen.add(id);
-      picked.push(foodRest);
+    for (const base of [
+      { tag: "food_support", sub: "restaurants" },
+      { tag: "food_support", sub: "late_night" },
+    ]) {
+      const id = `${base.tag}::${base.sub}`;
+      if (!seen.has(id)) {
+        seen.add(id);
+        picked.push({ ...base, keyword: "" });
+      }
     }
   }
 
@@ -658,16 +564,11 @@ window.analyze = async function analyze() {
   const dir = getCampusDirectory();
   const campusLabel = showCampus && dir[campusKey] ? dir[campusKey].displayName : "";
 
-  // Campus ONLY when selected
   const campusRecs = showCampus ? buildCampusRecommendations(campusKey, intents) : [];
 
-  // Ask for location only when user clicks Guidance
   const geo = await getGeoIfAllowed();
-
-  // Off-campus always (maps)
   const outside = buildOutsideResources(intents, geo);
 
-  // Chips: show intent labels
   const chips = intents
     .slice(0, 4)
     .map((it) => {
@@ -679,7 +580,7 @@ window.analyze = async function analyze() {
   const header = `
     <div class="chatItem">
       <strong>Finding the right support…</strong>
-      <p class="muted">Results are based on the specific keywords you used (not broad buzzwords).</p>
+      <p class="muted">Results are based on what you typed (food/health/fun now route correctly).</p>
       ${geo ? `<div class="tag">Location enabled</div>` : `<div class="tag">Location not shared</div>`}
       <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">
         ${chips}
@@ -712,7 +613,6 @@ window.analyze = async function analyze() {
   const html = header + campusBlock + outsideBlock + disclaimer;
   outputEl.innerHTML = html;
 
-  // Save chat
   const now = new Date();
   const chats = loadChats();
   chats.unshift({
