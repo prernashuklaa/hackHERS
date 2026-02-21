@@ -18,26 +18,52 @@ function escapeHtml(str) {
     .replaceAll("'","&#039;");
 }
 
-// Build campus recommendations based on input
 function buildCampusRecommendations(campusKey, text) {
   const dir = getCampusDirectory();
   let campusRecs = [];
+  const words = (text || "").toLowerCase().split(/\W+/);
+
+  // Map input words to resource tags
+  const KEYWORD_TAG_MAP = {
+    "lonely": "social_support",
+    "alone": "social_support",
+    "friends": "social_support",
+    "anxious": "mental_health",
+    "anxiety": "mental_health",
+    "depressed": "mental_health",
+    "stress": "mental_health",
+    "therapy": "mental_health"
+  };
+
+  const matchedTags = words.map(w => KEYWORD_TAG_MAP[w]).filter(Boolean);
 
   if (campusKey && dir[campusKey]) {
     const campus = dir[campusKey];
+
+    // Add the group offering under Rutgers NB mental health
+    if (campusKey === "rutgers_nb") {
+      campus.resources.push({
+        name: "Group Offerings",
+        type: "Mental Health / Therapy",
+        tags: ["mental_health"],
+        notes: "Peer and therapy groups at Rutgers",
+        links: [
+          { label: "View group offerings", url: "https://health.rutgers.edu/counseling-services/therapy-options/group-offerings" }
+        ]
+      });
+    }
+
     if (Array.isArray(campus.resources)) {
-      const userWords = (text || "").toLowerCase().split(/\W+/);
       campusRecs = campus.resources.filter(r =>
-        r.tags.some(tag => userWords.includes(tag))
+        r.tags.some(tag => matchedTags.includes(tag))
       );
-      if (campusRecs.length === 0) campusRecs = campus.resources.slice(); // fallback
     }
   } else {
-    // No campus selected → show general social_support
+    // No campus selected → show general matching resources
     Object.values(dir).forEach(campus => {
       if (Array.isArray(campus.resources)) {
         campus.resources.forEach(r => {
-          if ((r.tags || []).includes("social_support")) campusRecs.push(r);
+          if ((r.tags || []).some(tag => matchedTags.includes(tag))) campusRecs.push(r);
         });
       }
     });
