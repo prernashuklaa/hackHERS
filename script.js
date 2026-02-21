@@ -32,6 +32,7 @@ function buildCampusRecommendations(campusKey, text) {
     "anxiety": "mental_health",
     "depressed": "mental_health",
     "stress": "mental_health",
+    "stressed": "mental_health",
     "therapy": "mental_health"
   };
 
