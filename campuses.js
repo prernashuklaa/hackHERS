@@ -6,12 +6,20 @@ const CAMPUS_DIRECTORY = {
   displayName: "Rutgers — New Brunswick",
   resources: [
     {
-      tags: ["mental_health", "crisis"],
+      tags: ["mental_health", "lgbtq", "identity", "lonely", "stress", "stressed", "burntout", "burned_out", "anxious", "anxiety", "depressed", "depression", "alone", "crisis"],
       name: "CAPS (Counseling, ADAP & Psychiatric Services)",
       type: "counseling",
       notes: "Crisis support, individual/group counseling, workshops, psychiatric services, and referrals.",
-      url: "https://health.rutgers.edu/counseling-services"
-    },
+      links: [
+        {
+          label: "Counseling Services",
+          url: "https://health.rutgers.edu/counseling-services"
+        },
+        {
+          label: "Mental Health Group Sessions",
+          url: "https://health.rutgers.edu/counseling-services/therapy-options/group-offerings"
+        }
+      ]
     {
       tags: ["academic_support", "focus_support"],
       name: "Rutgers Learning Centers",
