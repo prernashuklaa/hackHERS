@@ -6,12 +6,12 @@ window.confirmCampusSearch = function confirmCampusSearch() {
   const input = document.getElementById("campusSearch");
   const select = document.getElementById("campusSelect");
   const hintEl = document.getElementById("campusHint");
-  const dir = window.CAMPUS_DIRECTORY || {};
-
-  if (!select || !hintEl) return;
+  const dir = window.CAMPUS_DIRECTORY;
+  
+  if (!dir || !select || !hintEl) return;
 
   const keyword = (input?.value || "").trim().toLowerCase();
-
+  
   // Reset dropdown
   select.innerHTML = `<option value="">No campus selected</option>`;
   window.customCampusName = "";
@@ -21,10 +21,12 @@ window.confirmCampusSearch = function confirmCampusSearch() {
     return;
   }
 
-  const matches = Object.entries(dir).filter(
-    ([_, campus]) => (campus.displayName || "").toLowerCase().includes(keyword)
-  );
-
+  const matches = Object.entries(dir).filter(([key, campus]) => {
+    const name = (campus.displayName || "").toLowerCase();
+    const searchKey = key.toLowerCase();
+    return name.includes(keyword) || searchKey.includes(keyword);
+});
+  
   if (!matches.length) {
     hintEl.textContent = `No schools found matching “${input.value}”.`;
     window.customCampusName = input.value;
@@ -39,7 +41,12 @@ window.confirmCampusSearch = function confirmCampusSearch() {
   });
 
   hintEl.textContent = `Found ${matches.length} school(s). Please select one above.`;
-};
+  
+  if (matches.length > 0) {
+    select.value = matches[0][0]; 
+    window.renderCampusHint();    
+  }
+}; 
 
 window.renderCampusHint = function renderCampusHint() {
   const hintEl = document.getElementById("campusHint");
