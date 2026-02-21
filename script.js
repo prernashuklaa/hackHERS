@@ -1,5 +1,15 @@
-// Compass - script.js
-// Front-end MVP: problem -> recommended resource types + local search links
+// Compass - script.js (with chat storage + search)
+// Stores chats in localStorage so it works on GitHub Pages without a backend.
+
+const STORAGE_KEY = "compass_chats_v1";
+
+window.addEventListener("load", () => {
+  renderChatHistory();
+});
+
+function clearInput() {
+  document.getElementById("inputBox").value = "";
+}
 
 function analyze() {
   const inputEl = document.getElementById("inputBox");
@@ -7,133 +17,215 @@ function analyze() {
 
   const text = (inputEl.value || "").trim();
   if (!text) {
-    outputEl.innerHTML = `
-      <div class="card">
-        <h3>Please type what’s going on</h3>
-        <p>Example: “I’m overwhelmed with classes and I can’t focus.”</p>
-      </div>
-    `;
+    outputEl.innerHTML = `<div class="chatItem"><strong>Please type what’s going on.</strong></div>`;
     return;
   }
 
-  // Show a quick loading state (feels polished)
   outputEl.innerHTML = `
-    <div class="card">
-      <h3>Finding the right support…</h3>
-      <p>Reading your message and matching you to the best next steps.</p>
+    <div class="chatItem">
+      <strong>Finding the right support…</strong>
+      <p class="muted">Matching your situation to resources near you.</p>
     </div>
   `;
 
-  // Basic categorization based on keywords (fast + reliable for a hackathon)
   const matches = categorize(text);
-
-  // Pick top recommendations (dedupe + prioritize)
   const recs = buildRecommendations(matches);
 
-  // Try to grab user location (optional). If blocked, we still show generic “Search near me”.
   getLocation()
-    .then((loc) => renderResults(outputEl, text, recs, loc))
-    .catch(() => renderResults(outputEl, text, recs, null));
+    .then((loc) => {
+      renderResults(outputEl, text, recs, loc);
+      saveChat(text, matches, recs);
+      renderChatHistory();
+    })
+    .catch(() => {
+      renderResults(outputEl, text, recs, null);
+      saveChat(text, matches, recs);
+      renderChatHistory();
+    });
 }
 
-/** Categorize text into need areas using lightweight keyword matching */
+/* ---------------- Chat storage ---------------- */
+
+function loadChats() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveChats(chats) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+}
+
+function saveChat(userText, categories, recs) {
+  const chats = loadChats();
+  const now = new Date();
+
+  // short summary: first recommendation title
+  const summary = recs?.[0]?.title ? recs[0].title : "Support recommendations";
+
+  chats.unshift({
+    id: crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()),
+    createdAt: now.toISOString(),
+    userText,
+    categories,
+    summary
+  });
+
+  // keep history lightweight
+  if (chats.length > 30) chats.length = 30;
+
+  saveChats(chats);
+}
+
+function renderChatHistory() {
+  const historyEl = document.getElementById("history");
+  if (!historyEl) return;
+
+  const q = (document.getElementById("searchBox")?.value || "").trim().toLowerCase();
+  const chats = loadChats();
+
+  const filtered = chats.filter((c) => {
+    const blob = `${c.userText} ${c.summary} ${(c.categories || []).join(" ")}`.toLowerCase();
+    return !q || blob.includes(q);
+  });
+
+  if (filtered.length === 0) {
+    historyEl.innerHTML = `<p class="muted">No chats yet. Try getting guidance above.</p>`;
+    return;
+  }
+
+  historyEl.innerHTML = filtered
+    .map((c) => {
+      const dt = new Date(c.createdAt);
+      return `
+        <div class="chatItem">
+          <div class="meta">
+            <span>${escapeHtml(dt.toLocaleString())}</span>
+            <span>${escapeHtml(c.summary)}</span>
+          </div>
+          <p style="margin:10px 0 0 0;">“${escapeHtml(c.userText)}”</p>
+          <div>
+            ${(c.categories || []).map((t) => `<span class="tag">${escapeHtml(prettyTag(t))}</span>`).join("")}
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function prettyTag(key) {
+  const map = {
+    crisis: "Urgent",
+    mental_health: "Mental health",
+    focus_support: "Focus",
+    academic_support: "Academics",
+    financial_support: "Financial",
+    social_support: "Social",
+    general_support: "General"
+  };
+  return map[key] || key;
+}
+
+function deleteAllChats() {
+  if (!confirm("Delete all saved chats from this browser?")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  renderChatHistory();
+}
+
+function exportChats() {
+  const chats = loadChats();
+  const blob = new Blob([JSON.stringify(chats, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "compass_chats.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+/* ---------------- Matching logic (same as before, shortened) ---------------- */
+
 function categorize(text) {
   const t = text.toLowerCase();
-
   const categories = [];
 
-  // mental health / emotional support
-  if (hasAny(t, [
-    "anxious", "anxiety", "panic", "depressed", "depression", "sad", "cry",
-    "hopeless", "overwhelmed", "stress", "stressed", "burnout", "burned out",
-    "can't cope", "cant cope", "mentally", "therapy", "counseling", "counsell",
-    "suicidal", "self harm", "self-harm"
-  ])) categories.push("mental_health");
-
-  // focus / motivation / procrastination
-  if (hasAny(t, [
-    "focus", "distract", "distraction", "procrast", "motivation", "can't start",
-    "cant start", "stuck", "doomscroll", "doom scroll", "tiktok", "instagram",
-    "social media", "phone", "scrolling", "adhd", "can't concentrate", "cant concentrate"
-  ])) categories.push("focus_support");
-
-  // academic / workload / studying
-  if (hasAny(t, [
-    "grade", "grades", "class", "classes", "exam", "midterm", "final",
-    "assignment", "deadline", "homework", "study", "studying", "failed",
-    "falling behind", "behind", "professor", "course", "gpa"
-  ])) categories.push("academic_support");
-
-  // financial / basic needs
-  if (hasAny(t, [
-    "money", "rent", "tuition", "bills", "financial", "food", "hungry", "groceries",
-    "job", "unemployed", "pay", "debt"
-  ])) categories.push("financial_support");
-
-  // social / isolation / safety
-  if (hasAny(t, [
-    "alone", "lonely", "isolated", "friends", "roommate", "relationship",
-    "breakup", "harassed", "harassment", "unsafe", "stalking", "assault"
-  ])) categories.push("social_support");
-
-  // crisis keywords (we'll show emergency guidance)
   if (hasAny(t, ["suicidal", "self harm", "self-harm", "kill myself"])) categories.push("crisis");
 
-  // If no matches, provide a general “start here”
-  if (categories.length === 0) categories.push("general_support");
+  if (hasAny(t, ["anxious","anxiety","panic","depressed","depression","sad","hopeless","overwhelmed","stress","stressed","burnout","therapy","counseling"])) {
+    categories.push("mental_health");
+  }
 
-  return categories;
+  if (hasAny(t, ["focus","distract","distraction","procrast","motivation","can't start","cant start","stuck","doomscroll","tiktok","instagram","social media","phone"])) {
+    categories.push("focus_support");
+  }
+
+  if (hasAny(t, ["grade","grades","class","classes","exam","midterm","final","assignment","deadline","homework","study","studying","falling behind","behind","gpa"])) {
+    categories.push("academic_support");
+  }
+
+  if (hasAny(t, ["money","rent","tuition","bills","financial","food","hungry","groceries","job","debt"])) {
+    categories.push("financial_support");
+  }
+
+  if (hasAny(t, ["alone","lonely","isolated","friends","roommate","relationship","breakup","unsafe","harassed","harassment"])) {
+    categories.push("social_support");
+  }
+
+  if (categories.length === 0) categories.push("general_support");
+  return Array.from(new Set(categories));
 }
 
-/** Build recommendations in a “resource type” format (not campus-specific) */
 function buildRecommendations(categories) {
-  // Each recommendation is a resource TYPE plus how to find it locally
   const library = {
     crisis: {
       title: "Urgent / Crisis Support",
-      why: "If you’re in immediate danger or might harm yourself, getting real-time help matters most.",
+      why: "If you might harm yourself or feel unsafe, real-time help matters most.",
       next: [
-        "If you’re in the U.S., you can call or text 988 (Suicide & Crisis Lifeline).",
-        "If you are in immediate danger, call local emergency services.",
-        "If you’re on campus, consider contacting campus security or an RA/Dean on call."
+        "If you’re in the U.S., call or text 988 (Suicide & Crisis Lifeline).",
+        "If you’re in immediate danger, call local emergency services.",
+        "If you’re on campus, contact campus security or an RA/Dean on call."
       ],
-      searchQuery: "crisis hotline near me"
+      searchQuery: "crisis hotline"
     },
     mental_health: {
       title: "Counseling / Mental Health Support",
-      why: "Your message suggests stress, anxiety, overwhelm, or emotional strain — talking to a professional or support service can help.",
+      why: "Your message suggests high stress or emotional strain — support can help.",
       next: [
-        "Look for campus counseling services or local community mental health centers.",
-        "If you prefer, search for therapists offering telehealth.",
-        "If cost is a concern, search for “sliding scale therapy”."
+        "Look for campus counseling or community mental health centers.",
+        "If cost is a concern, search for sliding-scale therapy.",
+        "If you prefer privacy, look for telehealth options."
       ],
-      searchQuery: "student counseling services"
+      searchQuery: "counseling services"
     },
     focus_support: {
       title: "Focus & Executive Function Support",
-      why: "This sounds like attention drift, procrastination, or motivation dips — supports exist beyond “just try harder.”",
+      why: "This sounds like attention drift or procrastination — supports exist beyond “try harder.”",
       next: [
-        "Look for an academic coaching center or learning specialist support.",
-        "Try a structured study space (library, tutoring center, study hall).",
-        "If distractions are intense, consider a focus accountability group."
+        "Look for academic coaching or learning specialist support.",
+        "Try structured study spaces (library, tutoring center).",
+        "Use accountability: a friend or study group check-in."
       ],
-      searchQuery: "academic coaching for students"
+      searchQuery: "academic coaching"
     },
     academic_support: {
       title: "Academic Support (Tutoring / Advising)",
-      why: "This sounds like workload pressure, grades, deadlines, or study difficulty — academic support can reduce the load fast.",
+      why: "This sounds like deadlines, grades, or coursework pressure — help can reduce the load fast.",
       next: [
-        "Find tutoring or a learning center for your subject.",
-        "Meet with an academic advisor to triage deadlines and options.",
-        "Ask a TA/professor about the minimum path to pass (very common!)."
+        "Find a tutoring/learning center for your subject.",
+        "Meet with an academic advisor to triage deadlines.",
+        "Ask a TA/professor for the minimum path forward."
       ],
-      searchQuery: "student tutoring center"
+      searchQuery: "tutoring center"
     },
     financial_support: {
       title: "Financial / Basic Needs Support",
-      why: "Your message suggests money stress, food insecurity, or financial pressure — there are often quick resources available.",
+      why: "Money stress can overwhelm everything — there are often quick resources available.",
       next: [
-        "Search for campus emergency funds and local assistance programs.",
+        "Search for campus emergency funds and assistance programs.",
         "Look for food pantries (campus or community).",
         "Check financial aid office options (appeals, short-term aid)."
       ],
@@ -141,76 +233,52 @@ function buildRecommendations(categories) {
     },
     social_support: {
       title: "Social Support & Community",
-      why: "Feeling isolated or unsafe can make everything harder — support networks and resources can help you stabilize quickly.",
+      why: "Feeling isolated can make school much harder — support networks help you stabilize.",
       next: [
-        "Look for peer support groups or student organizations aligned with your interests.",
-        "If there’s safety/harassment, contact campus support resources or local services.",
-        "Try a low-pressure start: attend one event and leave early if needed."
+        "Look for peer support groups and student organizations.",
+        "Try low-pressure events (go for 15 minutes, then leave).",
+        "If safety is involved, contact campus resources."
       ],
       searchQuery: "student support groups"
     },
     general_support: {
       title: "Start Here (Student Support Services)",
-      why: "We couldn’t confidently match your situation to a single category — a general student support office can route you.",
+      why: "A general student support office can route you to the right place.",
       next: [
         "Search for “student support services” or “student care team”.",
-        "If academics are involved, start with advising or a tutoring center.",
-        "If emotions are involved, start with counseling services."
+        "If academics are involved, start with advising/tutoring.",
+        "If emotions are involved, start with counseling."
       ],
       searchQuery: "student support services"
     }
   };
 
-  // Prioritize crisis if present
-  const unique = Array.from(new Set(categories));
-  unique.sort((a, b) => (a === "crisis" ? -1 : b === "crisis" ? 1 : 0));
-
-  // Convert to recommendation objects
-  return unique
-    .map((key) => library[key])
-    .filter(Boolean)
-    .slice(0, 4); // keep it demo-friendly
+  // prioritize crisis
+  const ordered = [...categories].sort((a, b) => (a === "crisis" ? -1 : b === "crisis" ? 1 : 0));
+  return ordered.map((k) => library[k]).filter(Boolean).slice(0, 4);
 }
 
-/** Try to get user's location (optional). Returns {lat, lon} or rejects */
+/* ---------------- Location + rendering ---------------- */
+
 function getLocation() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) return reject(new Error("no geolocation"));
-
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        resolve({
-          lat: pos.coords.latitude,
-          lon: pos.coords.longitude
-        });
-      },
+      (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
       () => reject(new Error("denied")),
       { enableHighAccuracy: false, timeout: 5000, maximumAge: 600000 }
     );
   });
 }
 
-/** Render results with optional location-aware Google Maps link */
 function renderResults(outputEl, userText, recs, loc) {
-  const disclaimer = `
-    <div class="disclaimer">
-      <strong>Note:</strong> Compass provides informational guidance, not medical or legal advice.
-      If you feel unsafe or in immediate danger, seek urgent help right away.
-    </div>
-  `;
-
   const cards = recs.map((r) => {
     const mapsLink = buildMapsLink(r.searchQuery, loc);
-
     return `
       <div class="card">
         <h3>${escapeHtml(r.title)}</h3>
         <p class="why">${escapeHtml(r.why)}</p>
-
-        <ul class="steps">
-          ${r.next.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}
-        </ul>
-
+        <ul class="steps">${r.next.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ul>
         <div class="actions">
           <a class="linkBtn" href="${mapsLink}" target="_blank" rel="noopener noreferrer">
             Search near me
@@ -221,29 +289,30 @@ function renderResults(outputEl, userText, recs, loc) {
   }).join("");
 
   outputEl.innerHTML = `
-    ${disclaimer}
-    <div class="summary">
-      <h3>Your message</h3>
-      <p class="quote">“${escapeHtml(userText)}”</p>
+    <div class="disclaimer">
+      <strong>Note:</strong> Compass provides informational guidance, not medical or legal advice.
+      If you feel unsafe or in immediate danger, seek urgent help right away.
+    </div>
+    <div class="chatItem" style="margin-top:12px;">
+      <div class="meta"><span>Your message</span><span>Saved to history</span></div>
+      <p style="margin:10px 0 0 0;">“${escapeHtml(userText)}”</p>
     </div>
     ${cards}
   `;
 }
 
-/** Helpers */
+function buildMapsLink(query, loc) {
+  const q = encodeURIComponent(query + " near me");
+  if (loc) {
+    return `https://www.google.com/maps/search/?api=1&query=${q}&center=${loc.lat},${loc.lon}`;
+  }
+  return `https://www.google.com/maps/search/?api=1&query=${q}`;
+}
+
+/* ---------------- Utils ---------------- */
 
 function hasAny(text, keywords) {
   return keywords.some((k) => text.includes(k));
-}
-
-function buildMapsLink(query, loc) {
-  // If location is available, use lat/lon to bias results
-  if (loc && typeof loc.lat === "number" && typeof loc.lon === "number") {
-    const q = encodeURIComponent(query);
-    return `https://www.google.com/maps/search/?api=1&query=${q}&query_place_id=&center=${loc.lat},${loc.lon}`;
-  }
-  // Otherwise, generic search
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query + " near me")}`;
 }
 
 function escapeHtml(str) {
