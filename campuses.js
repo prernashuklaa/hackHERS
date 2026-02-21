@@ -2,7 +2,13 @@ window.CAMPUS_DIRECTORY = {
   "rutgers_nb": {
     displayName: "Rutgers — New Brunswick",
     resources: [
-      // existing resources ...
+       name: "Group Offerings",
+        type: "Mental Health",
+        tags: ["mental_health"],
+        notes: "Peer and therapy groups at Rutgers",
+        links: [
+          { label: "View group offerings", url: "https://health.rutgers.edu/counseling-services/therapy-options/group-offerings" }
+        ]
     ]
   },
   "rutgers_nk": {
