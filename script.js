@@ -1,53 +1,22 @@
 // script.js
-let customCampusName = "";
 
-// Get campus directory
 function getCampusDirectory() {
   return window.CAMPUS_DIRECTORY || {};
 }
 
-// Campus selection
 function getSelectedCampusKey() {
   const el = document.getElementById("campusSelect");
   return el ? el.value : "";
 }
 
-window.handleCampusSearch = function handleCampusSearch() {
-  const input = document.getElementById("campusSearch");
-  const rawVal = (input?.value || "").trim();
-  const val = rawVal.toLowerCase();
-  const select = document.getElementById("campusSelect");
-  const dir = getCampusDirectory();
-
-  const matchedKey = Object.keys(dir).find(
-    (k) => (dir[k].displayName || "").toLowerCase().includes(val)
-  );
-
-  if (matchedKey) {
-    if (select) select.value = matchedKey;
-    customCampusName = "";
-  } else {
-    if (select) select.value = "";
-    customCampusName = rawVal;
-  }
-  renderCampusHint();
-};
-
-window.renderCampusHint = function renderCampusHint() {
-  const hintEl = document.getElementById("campusHint");
-  if (!hintEl) return;
-
-  const campusKey = getSelectedCampusKey();
-  const dir = getCampusDirectory();
-
-  if (campusKey && dir[campusKey]) {
-    hintEl.textContent = `Showing on-campus options for ${dir[campusKey].displayName}.`;
-  } else if (customCampusName) {
-    hintEl.textContent = `No campus-specific data for “${customCampusName}”. Showing general resources.`;
-  } else {
-    hintEl.textContent = "Tip: selecting a campus shows on-campus offices first.";
-  }
-};
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
 
 // Build campus recommendations based on input
 function buildCampusRecommendations(campusKey, text) {
@@ -61,7 +30,7 @@ function buildCampusRecommendations(campusKey, text) {
       campusRecs = campus.resources.filter(r =>
         r.tags.some(tag => userWords.includes(tag))
       );
-      if (campusRecs.length === 0) campusRecs = campus.resources.slice(); // fallback: show all
+      if (campusRecs.length === 0) campusRecs = campus.resources.slice(); // fallback
     }
   } else {
     // No campus selected → show general social_support
@@ -77,7 +46,7 @@ function buildCampusRecommendations(campusKey, text) {
   return campusRecs;
 }
 
-// Simple categorization
+// Categorize text
 function categorize(text) {
   const t = text.toLowerCase();
   const categories = [];
@@ -103,11 +72,10 @@ window.analyze = function analyze() {
   const campusKey = getSelectedCampusKey();
   const campusRecs = buildCampusRecommendations(campusKey, text);
 
-  // Render UI
   outputEl.innerHTML = `
     <div class="chatItem">
       <strong>Finding the right support…</strong>
-      <p class="muted">Matching your situation to on-campus and nearby resources.</p>
+      <p class="muted">Matching your situation to on-campus resources.</p>
     </div>
 
     ${campusRecs.length ? `<div class="card">
@@ -127,12 +95,8 @@ window.analyze = function analyze() {
   `;
 };
 
-// Escape HTML
-function escapeHtml(str) {
-  return String(str)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
+// Optional: clear input
+window.clearInput = function clearInput() {
+  const inputEl = document.getElementById("inputBox");
+  if (inputEl) inputEl.value = "";
+};
