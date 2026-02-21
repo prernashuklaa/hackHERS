@@ -20,12 +20,14 @@ function applyTheme(theme) {
 
   const btn = document.getElementById("themeToggle");
   if (!btn) return;
+
   const icon = btn.querySelector(".toggleIcon");
   const text = btn.querySelector(".toggleText");
   const isDark = t === "dark";
 
   if (icon) icon.textContent = isDark ? "☀️" : "🌙";
-  if (text) textContent = isDark ? "Light" : "Dark";
+  // FIX: was `textContent = ...` (missing `text.`)
+  if (text) text.textContent = isDark ? "Light" : "Dark";
 }
 
 function getSavedTheme() {
@@ -44,6 +46,20 @@ window.addEventListener("DOMContentLoaded", () => {
   applyTheme(getSavedTheme());
 });
 
+window.addEventListener("load", () => {
+  // Don’t crash on pages that don’t have these elements (ex: emergency.html)
+  if (document.getElementById("campusHint")) renderCampusHint();
+  if (document.getElementById("history")) renderChatHistory();
+});
+
+/* =========================
+   BASIC UI
+========================= */
+window.clearInput = function clearInput() {
+  const inputEl = document.getElementById("inputBox");
+  if (inputEl) inputEl.value = "";
+};
+
 /* =========================
    CAMPUS SEARCH
 ========================= */
@@ -54,12 +70,15 @@ function getSelectedCampusKey() {
 
 window.handleCampusSearch = function handleCampusSearch() {
   const input = document.getElementById("campusSearch");
-  const val = (input?.value || "").trim().toLowerCase();
+  const rawVal = (input?.value || "").trim();
+  const val = rawVal.toLowerCase();
+
   const select = document.getElementById("campusSelect");
   const dir = getCampusDirectory();
 
+  // Match typed campus name to known displayName
   const matchedKey = Object.keys(dir).find(
-    (k) => dir[k].displayName.toLowerCase().includes(val)
+    (k) => (dir[k].displayName || "").toLowerCase().includes(val)
   );
 
   if (matchedKey) {
@@ -67,8 +86,10 @@ window.handleCampusSearch = function handleCampusSearch() {
     customCampusName = "";
   } else {
     if (select) select.value = "";
-    customCampusName = val;
+    // Store what the user typed (not forced lowercase)
+    customCampusName = rawVal;
   }
+
   renderCampusHint();
 };
 
@@ -91,12 +112,14 @@ window.renderCampusHint = function renderCampusHint() {
 function buildCampusRecommendations(campusKey, text) {
   const dir = getCampusDirectory();
   if (!campusKey || !dir[campusKey]) return [];
+
   const campus = dir[campusKey];
   if (!Array.isArray(campus.resources)) return [];
 
+  // Your teammate’s approach: match tags by checking if the user text includes the tag
   const t = (text || "").toLowerCase();
   const hits = campus.resources.filter((r) =>
-    (r.tags || []).some((tag) => t.includes(tag))
+    (r.tags || []).some((tag) => t.includes(String(tag).toLowerCase()))
   );
 
   return hits.length ? hits.slice(0, 4) : campus.resources.slice(0, 2);
@@ -129,11 +152,16 @@ window.analyze = function analyze() {
   const campusRecs = buildCampusRecommendations(campusKey, text);
 
   getLocation()
-    .then((loc) => renderResults(outputEl, text, recs, campusRecs, campusKey, loc))
-    .catch(() => renderResults(outputEl, text, recs, campusRecs, campusKey, null));
-
-  saveChat(text, categories, recs, campusKey, customCampusName);
-  renderChatHistory();
+    .then((loc) => {
+      renderResults(outputEl, text, recs, campusRecs, campusKey, loc, false);
+      saveChat(text, categories, recs, campusKey, customCampusName);
+      renderChatHistory();
+    })
+    .catch(() => {
+      renderResults(outputEl, text, recs, campusRecs, campusKey, null, false);
+      saveChat(text, categories, recs, campusKey, customCampusName);
+      renderChatHistory();
+    });
 };
 
 /* =========================
@@ -176,6 +204,7 @@ function renderResults(outputEl, userText, recs, campusRecs, campusKey, loc, isR
   outputEl.innerHTML = `
     <div class="disclaimer">
       <strong>Note:</strong> Compass provides informational guidance, not medical or legal advice.
+      If you feel unsafe or in immediate danger, use the Emergency tab.
     </div>
 
     <div class="chatItem" style="margin-top:12px;">
@@ -200,23 +229,154 @@ function renderResults(outputEl, userText, recs, campusRecs, campusKey, loc, isR
 function buildMapsLink(query, loc, campusLabel) {
   const extra = campusLabel ? ` ${campusLabel}` : "";
   const q = encodeURIComponent(`${query}${extra} near me`);
-  return loc ? `https://www.google.com/maps/search/?api=1&query=${q}&center=${loc.lat},${loc.lon}` : `https://www.google.com/maps/search/?api=1&query=${q}`;
+  return loc
+    ? `https://www.google.com/maps/search/?api=1&query=${q}&center=${loc.lat},${loc.lon}`
+    : `https://www.google.com/maps/search/?api=1&query=${q}`;
 }
 
 /* =========================
-   CHAT STORAGE + UTILS
+   CHAT STORAGE + HISTORY UI
 ========================= */
 function loadChats() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+  catch { return []; }
 }
-function saveChats(chats) { localStorage.setItem(STORAGE_KEY, JSON.stringify(chats)); }
+
+function saveChats(chats) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+}
+
 function saveChat(userText, categories, recs, campusKey, customName) {
   const chats = loadChats();
   const now = new Date();
   const summary = recs?.[0]?.title || "Support recommendations";
-  chats.unshift({ id: crypto?.randomUUID?.() || String(Date.now()), createdAt: now.toISOString(), userText, categories, summary, campusKey: campusKey || "", customCampusName: customName || "", recs });
+
+  chats.unshift({
+    id: crypto?.randomUUID?.() || String(Date.now()),
+    createdAt: now.toISOString(),
+    userText,
+    categories,
+    summary,
+    campusKey: campusKey || "",
+    customCampusName: customName || "",
+    recs: recs || []
+  });
+
   if (chats.length > 30) chats.length = 30;
   saveChats(chats);
+}
+
+window.openChat = function openChat(chatId) {
+  const chats = loadChats();
+  const chat = chats.find(c => c.id === chatId);
+  if (!chat) return;
+
+  // Restore campus
+  const select = document.getElementById("campusSelect");
+  if (select) select.value = chat.campusKey || "";
+
+  // Restore campusSearch text + customCampusName
+  const campusSearch = document.getElementById("campusSearch");
+  customCampusName = chat.customCampusName || "";
+  if (campusSearch) campusSearch.value = customCampusName;
+
+  renderCampusHint();
+
+  // Restore input
+  const inputEl = document.getElementById("inputBox");
+  if (inputEl) inputEl.value = chat.userText || "";
+
+  const outputEl = document.getElementById("output");
+  if (!outputEl) return;
+
+  const campusRecs = buildCampusRecommendations(chat.campusKey || "", chat.userText || "");
+
+  // Render with fresh location if allowed
+  getLocation()
+    .then((loc) => renderResults(outputEl, chat.userText || "", chat.recs || [], campusRecs, chat.campusKey || "", loc, true))
+    .catch(() => renderResults(outputEl, chat.userText || "", chat.recs || [], campusRecs, chat.campusKey || "", null, true));
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+window.renderChatHistory = function renderChatHistory() {
+  const historyEl = document.getElementById("history");
+  if (!historyEl) return;
+
+  const q = (document.getElementById("searchBox")?.value || "").trim().toLowerCase();
+  const chats = loadChats();
+  const dir = getCampusDirectory();
+
+  const filtered = chats.filter(c => {
+    const campusName =
+      (c.campusKey && dir[c.campusKey]) ? dir[c.campusKey].displayName :
+      (c.customCampusName || "");
+
+    const blob = `${c.userText} ${c.summary} ${(c.categories || []).join(" ")} ${campusName}`.toLowerCase();
+    return !q || blob.includes(q);
+  });
+
+  if (!filtered.length) {
+    historyEl.innerHTML = `<p class="muted">No chats yet. Try getting guidance on the left.</p>`;
+    return;
+  }
+
+  historyEl.innerHTML = filtered.map(c => {
+    const dt = new Date(c.createdAt);
+    const campusLabel =
+      (c.campusKey && dir[c.campusKey]) ? ` • ${dir[c.campusKey].displayName}` :
+      (c.customCampusName ? ` • ${c.customCampusName}` : "");
+
+    return `
+      <div class="chatItem chatClickable" onclick="openChat('${escapeAttr(c.id)}')">
+        <div class="meta">
+          <span>${escapeHtml(dt.toLocaleString())}${escapeHtml(campusLabel)}</span>
+          <span>${escapeHtml(c.summary)}</span>
+        </div>
+        <p class="chatPreview">“${escapeHtml(c.userText)}”</p>
+        <div>
+          ${(c.categories || []).map(t => `<span class="tag">${escapeHtml(prettyTag(t))}</span>`).join("")}
+        </div>
+      </div>
+    `;
+  }).join("");
+};
+
+window.deleteAllChats = function deleteAllChats() {
+  if (!confirm("Delete all saved chats from this browser?")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  renderChatHistory();
+};
+
+window.exportChats = function exportChats() {
+  const chats = loadChats();
+  const blob = new Blob([JSON.stringify(chats, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "compass_chats.json";
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+/* =========================
+   UTILS
+========================= */
+function prettyTag(key) {
+  const map = {
+    crisis: "Urgent",
+    mental_health: "Mental health",
+    focus_support: "Focus",
+    academic_support: "Academics",
+    financial_support: "Financial",
+    social_support: "Social",
+    general_support: "General"
+  };
+  return map[key] || key;
+}
+
+function escapeAttr(str) {
+  return String(str).replaceAll("'", "\\'");
 }
 
 function escapeHtml(str) {
@@ -241,7 +401,9 @@ function categorize(text) {
   return Array.from(new Set(categories));
 }
 
-function hasAny(text, keywords) { return keywords.some(k => text.includes(k)); }
+function hasAny(text, keywords) {
+  return keywords.some(k => text.includes(k));
+}
 
 function buildRecommendations(categories) {
   const library = {
