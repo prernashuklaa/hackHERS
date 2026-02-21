@@ -247,4 +247,15 @@ button:hover{ opacity: 0.92; }
 .phoneLink{
   color: #111;
   text-decoration: underline;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.phoneLink:hover{
+  opacity: 0.85;
+}
+
+.link{
+  color: #111;
+  text-decoration: underline;
 }
