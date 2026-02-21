@@ -94,13 +94,19 @@ window.toggleTheme = function toggleTheme() {
 
 // ---------- INTENTS: tag + sub-intent ----------
 const INTENTS = {
-  mental_health: {
-    therapy: { label: "Therapy & counseling", mapsQuery: "therapy counseling center near me" },
-    group: { label: "Group therapy / support groups", mapsQuery: "support group group therapy near me" },
-    stress: { label: "Stress / burnout support", mapsQuery: "stress management burnout support near me" },
-    sleep: { label: "Sleep support", mapsQuery: "sleep clinic insomnia help near me" },
-    default: { label: "Mental health support", mapsQuery: "mental health clinic counseling near me" },
-  },
+ mental_health: {
+  therapy: { label: "Therapy & counseling", mapsQuery: "therapy counseling center near me" },
+  group: { label: "Support groups", mapsQuery: "support group group therapy near me" },
+  stress: { label: "Stress / burnout support", mapsQuery: "stress management burnout support near me" },
+  sleep: { label: "Sleep support", mapsQuery: "sleep clinic insomnia help near me" },
+
+  // optional nicer buckets
+  anxiety: { label: "Anxiety / panic support", mapsQuery: "anxiety counseling near me" },
+  depression: { label: "Depression / low mood support", mapsQuery: "depression counseling near me" },
+  loneliness: { label: "Loneliness / connection support", mapsQuery: "support group loneliness near me" },
+
+  default: { label: "Mental health support", mapsQuery: "mental health clinic counseling near me" },
+},
 
   health_support: {
     urgent: { label: "Urgent care", mapsQuery: "urgent care near me" },
@@ -337,6 +343,40 @@ const MATCH_RULES = [
 
   // ===== CRISIS (Emergency tab handles real callouts; still detect) =====
   { tag: "crisis", sub: "default", weight: 100, patterns: [/\b(kill myself|suicidal|self harm|self-harm)\b/] },
+  // ===== MENTAL HEALTH (EXPANDED) =====
+
+// High-confidence crisis-ish words (still not “Emergency tab” level unless you want it)
+// NOTE: Your “crisis” rule already catches self-harm; keep that separate.
+{ tag: "mental_health", sub: "default", weight: 25, patterns: [/\b(panic attack|panicking|i'?m panicking|hyperventilat(e|ing)|can'?t calm down)\b/] },
+{ tag: "mental_health", sub: "default", weight: 22, patterns: [/\b(can'?t stop crying|crying a lot|breakdown|meltdown)\b/] },
+
+// Anxiety
+{ tag: "mental_health", sub: "default", weight: 20, patterns: [/\b(anxious|anxiety|worried|overthinking|ruminating|fearful|nervous|on edge)\b/] },
+{ tag: "mental_health", sub: "default", weight: 18, patterns: [/\b(stressed|stress|burnt out|burned out|overwhelmed|too much|pressure)\b/] },
+
+// Depression / low mood
+{ tag: "mental_health", sub: "default", weight: 22, patterns: [/\b(depressed|depression|hopeless|empty|numb|worthless|no motivation|unmotivated)\b/] },
+{ tag: "mental_health", sub: "default", weight: 18, patterns: [/\b(sad|down|low|miserable|exhausted emotionally)\b/] },
+
+// Loneliness / social isolation (often mental-health related)
+{ tag: "mental_health", sub: "default", weight: 16, patterns: [/\b(lonely|alone|isolated|no friends|no one to talk to|left out)\b/] },
+
+// Grief / loss / breakup
+{ tag: "mental_health", sub: "default", weight: 16, patterns: [/\b(grief|grieving|loss|someone died|passed away|funeral)\b/] },
+{ tag: "mental_health", sub: "default", weight: 14, patterns: [/\b(breakup|heartbroken|relationship ended|got dumped)\b/] },
+
+// Homesickness / adjustment
+{ tag: "mental_health", sub: "default", weight: 14, patterns: [/\b(homesick|miss home|can'?t adjust|can'?t fit in|out of place)\b/] },
+
+// Sleep (keep as a specific sub-intent)
+{ tag: "mental_health", sub: "sleep", weight: 15, patterns: [/\b(insomnia|can'?t sleep|trouble sleeping|sleep schedule|nightmares)\b/] },
+
+// Therapy / counseling (specific)
+{ tag: "mental_health", sub: "therapy", weight: 18, patterns: [/\b(therapy|therapist|counseling|counsell?or|mental health appointment)\b/] },
+{ tag: "mental_health", sub: "group", weight: 14, patterns: [/\b(support group|group therapy|group counseling)\b/] },
+
+// Stress tools / coping (optional)
+{ tag: "mental_health", sub: "stress", weight: 14, patterns: [/\b(coping|coping skills|grounding|breathing exercise|mindfulness)\b/] },
 ];
 
 // Detect intents with scoring (top 1–2)
