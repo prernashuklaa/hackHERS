@@ -120,3 +120,123 @@ button:active {
   color: white;
   font-size: 14px;
 }
+/* --- Prettier UI additions --- */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.nav a {
+  text-decoration: none;
+  font-size: 13px;
+  color: #111;
+  background: #f2f2f3;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.nav a:hover {
+  opacity: 0.85;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.row button {
+  margin-top: 0;
+}
+
+.smallBtn {
+  background: #f2f2f3;
+  color: #111;
+}
+
+.smallBtn:hover { opacity: 0.9; }
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+@media (min-width: 820px) {
+  .grid {
+    grid-template-columns: 1.2fr 0.8fr;
+  }
+}
+
+.panel {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.panel h2 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+}
+
+.muted { color: #666; font-size: 13px; }
+
+.chatItem {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 10px;
+  background: #fafafa;
+}
+
+.chatItem .meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: #666;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f2f2f3;
+  margin-top: 8px;
+  margin-right: 6px;
+}
+
+.searchBox {
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.searchBox:focus {
+  border-color: #888;
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+}
