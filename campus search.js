@@ -3,10 +3,10 @@
 ========================= */
 
 // Get currently selected campus key
-function getSelectedCampusKey() {
+window.getSelectedCampusKey = function getSelectedCampusKey() {
   const el = document.getElementById("campusSelect");
   return el ? el.value : "";
-}
+};
 
 // Confirm search and populate matching campuses
 window.confirmCampusSearch = function confirmCampusSearch() {
@@ -19,7 +19,7 @@ window.confirmCampusSearch = function confirmCampusSearch() {
 
   // Reset dropdown (keep default option)
   select.innerHTML = `<option value="">No campus selected</option>`;
-  customCampusName = "";
+  window.customCampusName = "";
 
   if (!keyword) {
     hintEl.textContent = "Please enter a school name to search.";
@@ -33,7 +33,7 @@ window.confirmCampusSearch = function confirmCampusSearch() {
 
   if (matches.length === 0) {
     hintEl.textContent = `No schools found matching “${input.value}”.`;
-    customCampusName = input.value;
+    window.customCampusName = input.value;
     return;
   }
 
@@ -57,8 +57,8 @@ window.renderCampusHint = function renderCampusHint() {
 
   if (campusKey && dir[campusKey]) {
     hintEl.textContent = `Showing on-campus options for ${dir[campusKey].displayName}.`;
-  } else if (customCampusName) {
-    hintEl.textContent = `No campus-specific data for “${customCampusName}”. Showing general resources.`;
+  } else if (window.customCampusName) {
+    hintEl.textContent = `No campus-specific data for “${window.customCampusName}”. Showing general resources.`;
   } else {
     hintEl.textContent = "Tip: selecting a campus shows on-campus offices first.";
   }
