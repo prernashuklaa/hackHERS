@@ -3,31 +3,31 @@
 
 const CAMPUS_DIRECTORY = {
   rutgers_nb: {
-    displayName: "Rutgers — New Brunswick",
-    resources: [
-      {
-        tags: ["mental_health", "crisis"],
-        name: "CAPS (Counseling, ADAP & Psychiatric Services)",
-        type: "On-campus counseling",
-        notes: "Confidential counseling and support for students.",
-        url: "https://health.rutgers.edu"
-      },
-      {
-        tags: ["academic_support", "focus_support"],
-        name: "Learning Centers / Tutoring",
-        type: "Academic support",
-        notes: "Course support, tutoring, study skills.",
-        url: "https://sas.rutgers.edu"
-      },
-      {
-        tags: ["financial_support"],
-        name: "Student Financial Aid Office",
-        type: "Financial support",
-        notes: "Aid questions, emergency funding info, guidance.",
-        url: "https://studentaid.rutgers.edu"
-      }
-    ]
-  },
+  displayName: "Rutgers — New Brunswick",
+  resources: [
+    {
+      tags: ["mental_health", "crisis"],
+      name: "CAPS (Counseling, ADAP & Psychiatric Services)",
+      type: "On-campus counseling",
+      notes: "Crisis support, individual/group counseling, workshops, psychiatric services, and referrals.",
+      url: "https://health.rutgers.edu/counseling-services"
+    },
+    {
+      tags: ["academic_support", "focus_support"],
+      name: "Rutgers Learning Centers",
+      type: "Academic support",
+      notes: "Peer tutoring, study groups, academic coaching, writing support, and workshops.",
+      url: "https://learningcenters.rutgers.edu/"
+    },
+    {
+      tags: ["financial_support"],
+      name: "Scarlet Hub — Office of Financial Aid",
+      type: "Financial support",
+      notes: "Financial aid guidance, eligibility, awards, and counseling across Rutgers campuses.",
+      url: "https://scarlethub.rutgers.edu/financial-services/office-of-financial-aid/"
+    }
+  ]
+},
 
   rutgers_nk: {
     displayName: "Rutgers — Newark",
