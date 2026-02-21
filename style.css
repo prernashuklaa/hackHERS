@@ -1,393 +1,83 @@
-/* =========================
-   Compass Theme (Blue+Lavender) + Dark Mode
-   ========================= */
+/* =========================================================
+   PREMIUM FONT / LOGO OVERRIDES (paste at VERY bottom)
+   Recoleta + DM Serif Display + heavy spacing
+   ========================================================= */
 
-:root {
-  /* Light theme */
-  --bg: #f6f7ff;
-  --bg2: #f7fbff;
-  --blob1: rgba(99, 102, 241, 0.25);   /* indigo */
-  --blob2: rgba(168, 85, 247, 0.18);   /* violet */
-  --blob3: rgba(56, 189, 248, 0.14);   /* sky */
-
-  --surface: rgba(255, 255, 255, 0.82);
-  --surfaceSolid: #ffffff;
-
-  --text: #0f172a;
-  --muted: #5b6477;
-  --border: rgba(15, 23, 42, 0.10);
-
-  --shadowLg: 0 24px 70px rgba(15, 23, 42, 0.12);
-  --shadowMd: 0 14px 40px rgba(15, 23, 42, 0.10);
-  --shadowSm: 0 8px 22px rgba(15, 23, 42, 0.10);
-
-  --radiusLg: 18px;
-  --radiusMd: 14px;
-  --radiusSm: 12px;
-
-  --primary: #4f46e5;        /* indigo */
-  --primary2: #7c3aed;       /* violet */
-  --ring: rgba(79, 70, 229, 0.22);
-
-  --chipBg: rgba(124, 58, 237, 0.10);
-  --chipBorder: rgba(124, 58, 237, 0.18);
-
-  --warnBg: rgba(255, 230, 170, 0.35);
-  --warnBorder: rgba(255, 200, 90, 0.30);
+/* 1) Recoleta (LOCAL).
+   Put your font file at: /fonts/Recoleta-Regular.woff2
+   If you don't have it yet, everything still works (it will fall back). */
+@font-face {
+  font-family: "Recoleta";
+  src: url("fonts/Recoleta-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
-/* Dark theme overrides */
-[data-theme="dark"] {
-  --bg: #070a18;
-  --bg2: #0b1026;
-  --blob1: rgba(99, 102, 241, 0.25);
-  --blob2: rgba(168, 85, 247, 0.20);
-  --blob3: rgba(56, 189, 248, 0.12);
-
-  --surface: rgba(16, 18, 35, 0.70);
-  --surfaceSolid: rgba(16, 18, 35, 0.92);
-
-  --text: #e7eaff;
-  --muted: rgba(231, 234, 255, 0.72);
-  --border: rgba(231, 234, 255, 0.10);
-
-  --shadowLg: 0 24px 70px rgba(0, 0, 0, 0.55);
-  --shadowMd: 0 14px 40px rgba(0, 0, 0, 0.45);
-  --shadowSm: 0 8px 22px rgba(0, 0, 0, 0.40);
-
-  --primary: #8b5cf6;
-  --primary2: #60a5fa;
-  --ring: rgba(139, 92, 246, 0.25);
-
-  --chipBg: rgba(139, 92, 246, 0.16);
-  --chipBorder: rgba(139, 92, 246, 0.22);
-
-  --warnBg: rgba(255, 208, 120, 0.18);
-  --warnBorder: rgba(255, 208, 120, 0.22);
-}
-
-* { box-sizing: border-box; }
-html, body { height: 100%; }
-
+/* 2) Base typography */
 body {
-  margin: 0;
-  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Arial, sans-serif;
-  color: var(--text);
-
-  background:
-    radial-gradient(900px 520px at 12% 10%, var(--blob1), transparent 62%),
-    radial-gradient(760px 520px at 86% 18%, var(--blob2), transparent 62%),
-    radial-gradient(700px 520px at 50% 90%, var(--blob3), transparent 65%),
-    linear-gradient(180deg, var(--bg), var(--bg2));
+  font-family: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
 }
 
-.container {
-  width: min(1100px, calc(100% - 40px));
-  margin: 42px auto;
-  padding: 26px;
-  border-radius: var(--radiusLg);
-  background: var(--surface);
-  border: 1px solid rgba(255,255,255,0.25);
-  box-shadow: var(--shadowLg);
-  backdrop-filter: blur(10px);
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
+/* 3) Wordmark: RECOLETA + heavy spacing */
+.logoText,
 .brand h1 {
+  font-family: "Recoleta", "DM Serif Display", serif;
+  font-weight: 400;
+  letter-spacing: 0.18em;     /* heavy tracking */
+  text-transform: uppercase;  /* makes tracking look premium */
+}
+
+/* 4) Logo layout */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin: 0;
+}
+
+.logoSmall .logoText {
+  font-size: 34px;
+}
+
+.brand h1 .logoText {
+  font-size: 48px;
+  line-height: 1;
+}
+
+/* 5) Compass icon styling */
+.logoMark {
   font-size: 30px;
-  letter-spacing: -0.02em;
+  opacity: 0.85;
+  transform: translateY(1px);
+  filter: drop-shadow(0 10px 18px rgba(15,23,42,0.10));
 }
 
-.subtitle {
-  margin: 8px 0 0 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.muted { color: var(--muted); font-size: 13px; }
-
-.nav {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.navLink {
-  text-decoration: none;
-  font-size: 13px;
-  padding: 9px 14px;
-  border-radius: 999px;
-  color: var(--text);
-  background: rgba(255,255,255,0.55);
-  border: 1px solid var(--border);
-  box-shadow: 0 8px 22px rgba(15,23,42,0.08);
-  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
-}
-
-[data-theme="dark"] .navLink {
-  background: rgba(16,18,35,0.65);
-}
-
-.navLink:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 30px rgba(15,23,42,0.12);
-}
-
-/* Theme toggle button */
-.themeToggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.35));
-  color: var(--text);
-  cursor: pointer;
-  box-shadow: 0 8px 22px rgba(15,23,42,0.08);
-  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
-}
-
-[data-theme="dark"] .themeToggle {
-  background: linear-gradient(180deg, rgba(16,18,35,0.75), rgba(16,18,35,0.55));
-}
-
-.themeToggle:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 30px rgba(15,23,42,0.12);
-}
-
-.toggleIcon { font-size: 14px; }
-.toggleText { font-size: 13px; font-weight: 600; }
-
-/* Layout stays identical */
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 18px;
-  margin-top: 22px;
-}
-
-@media (min-width: 900px){
-  .grid { grid-template-columns: 1.3fr 0.7fr; align-items: start; }
-}
-
-.panel {
-  background: rgba(255,255,255,0.70);
-  border-radius: var(--radiusLg);
-  padding: 18px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadowMd);
-  min-width: 0;
-}
-
-[data-theme="dark"] .panel {
-  background: rgba(16,18,35,0.65);
-}
-
-.panel h2 {
-  margin: 0 0 10px 0;
-  font-size: 16px;
-  letter-spacing: -0.01em;
-}
-
-/* Inputs */
-textarea,
-.searchBox,
-select.searchBox {
-  width: 100%;
-  padding: 12px;
-  border-radius: var(--radiusMd);
-  border: 1px solid var(--border);
-  outline: none;
-  font-size: 14px;
-  background: rgba(255,255,255,0.78);
-  color: var(--text);
-  transition: box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-}
-
-textarea { min-height: 175px; resize: none; padding: 14px; }
-
-[data-theme="dark"] textarea,
-[data-theme="dark"] .searchBox,
-[data-theme="dark"] select.searchBox {
-  background: rgba(16,18,35,0.78);
-}
-
-textarea:focus,
-.searchBox:focus,
-select.searchBox:focus {
-  border-color: rgba(79,70,229,0.45);
-  box-shadow: 0 0 0 4px var(--ring);
-}
-
-/* Buttons */
-.row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 12px;
-}
-
-button {
-  border: 1px solid transparent;
-  border-radius: 999px;
-  padding: 10px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: transform 0.10s ease, box-shadow 0.12s ease, opacity 0.12s ease;
-}
-
-button:not(.smallBtn) {
+/* 6) Make title pop with gradient ink */
+.brand h1 .logoText {
   background: linear-gradient(135deg, var(--primary), var(--primary2));
-  color: white;
-  box-shadow: 0 14px 30px rgba(79,70,229,0.22);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-button:not(.smallBtn):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 40px rgba(79,70,229,0.28);
+/* 7) Section headings: DM Serif Display + subtle tracking */
+.panel h2,
+.card h3 {
+  font-family: "DM Serif Display", serif;
+  letter-spacing: 0.06em;
 }
 
-.smallBtn {
-  background: rgba(255,255,255,0.55);
-  color: var(--text);
-  border: 1px solid var(--border);
-  box-shadow: 0 10px 24px rgba(15,23,42,0.08);
-}
-
-[data-theme="dark"] .smallBtn { background: rgba(16,18,35,0.65); }
-
-.smallBtn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 30px rgba(15,23,42,0.12);
-}
-
-/* Output area */
-.output {
-  margin-top: 16px;
-  padding: 14px;
-  border-radius: var(--radiusLg);
-  background: rgba(79,70,229,0.08);
-  border: 1px solid rgba(79,70,229,0.14);
-}
-
-/* Cards + chat items */
-.card,
-.chatItem {
-  background: rgba(255,255,255,0.72);
-  border-radius: var(--radiusLg);
-  padding: 14px;
-  margin-top: 14px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadowSm);
-}
-
-[data-theme="dark"] .card,
-[data-theme="dark"] .chatItem {
-  background: rgba(16,18,35,0.70);
-}
-
-.card h3 { margin: 4px 0 8px 0; font-size: 15px; }
-.why { color: var(--muted); }
-.steps { margin: 10px 0 0 18px; }
-
-.chatItem { margin-top: 10px; padding: 10px 12px; }
-.chatItem .meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
+/* 8) Subtitle: airy + editorial */
+.subtitle {
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
   font-size: 12px;
-  color: var(--muted);
+  opacity: 0.72;
+  max-width: 620px;
 }
 
-.chatClickable {
-  cursor: pointer;
-  transition: transform 0.08s ease, box-shadow 0.12s ease, background 0.12s ease;
-}
-
-.chatClickable:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 42px rgba(15,23,42,0.14);
-  background: rgba(124,58,237,0.06);
-}
-
-/* Tags */
-.tag {
-  display: inline-block;
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: var(--chipBg);
-  border: 1px solid var(--chipBorder);
-  color: var(--text);
-  margin-top: 8px;
-  margin-right: 6px;
-}
-
-/* Disclaimer */
-.disclaimer {
-  background: var(--warnBg);
-  border: 1px solid var(--warnBorder);
-  padding: 10px 12px;
-  border-radius: var(--radiusMd);
-  font-size: 13px;
-}
-
-/* Link button */
-.linkBtn {
-  display: inline-block;
-  text-decoration: none;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(79,70,229,0.12);
-  color: var(--primary);
-  border: 1px solid rgba(79,70,229,0.20);
-  font-weight: 700;
-  transition: transform 0.10s ease, box-shadow 0.12s ease, background 0.12s ease;
-}
-
-.linkBtn:hover {
-  transform: translateY(-1px);
-  background: rgba(79,70,229,0.16);
-  box-shadow: 0 14px 30px rgba(79,70,229,0.14);
-}
-
-/* Emergency links */
-.phoneLink, .link {
-  color: var(--primary2);
-  text-decoration: underline;
-  font-weight: 800;
-}
-
-.phoneLink:hover, .link:hover { opacity: 0.85; }
-
-/* Make select arrow look nice */
-select.searchBox {
-  appearance: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, rgba(15,23,42,0.55) 50%),
-    linear-gradient(135deg, rgba(15,23,42,0.55) 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) 18px,
-    calc(100% - 13px) 18px;
-  background-size: 5px 5px, 5px 5px;
-  background-repeat: no-repeat;
-  padding-right: 34px;
-}
-
-[data-theme="dark"] select.searchBox {
-  background-image:
-    linear-gradient(45deg, transparent 50%, rgba(231,234,255,0.65) 50%),
-    linear-gradient(135deg, rgba(231,234,255,0.65) 50%, transparent 50%);
+/* 9) Optional: give the header more breathing room */
+.header {
+  padding-bottom: 4px;
 }
