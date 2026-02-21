@@ -1,10 +1,8 @@
-// campuses.js
-
 window.CAMPUS_DIRECTORY = {
   "rutgers_nb": {
     displayName: "Rutgers — New Brunswick",
     resources: [
-      // Mental Health / Therapy
+      // Mental Health
       {
         name: "Group Offerings",
         type: "Mental Health / Therapy",
@@ -24,10 +22,10 @@ window.CAMPUS_DIRECTORY = {
         ]
       },
       {
-        name: "Off-campus Therapists",
+        name: "Nearby Therapists",
         type: "Mental Health",
         tags: ["mental_health"],
-        notes: "Nearby therapists and counseling centers",
+        notes: "Off-campus therapy options",
         links: [
           { label: "Find a therapist", url: "https://www.psychologytoday.com/us/therapists/new-brunswick-nj" }
         ]
@@ -43,15 +41,6 @@ window.CAMPUS_DIRECTORY = {
           { label: "Find peer groups", url: "https://rutgers.campuslabs.com/" }
         ]
       },
-      {
-        name: "Community Meetups",
-        type: "Social Support",
-        tags: ["social_support"],
-        notes: "Local social organizations to meet new people",
-        links: [
-          { label: "Explore local groups", url: "https://www.meetup.com/cities/us/nj/new_brunswick/" }
-        ]
-      },
 
       // Financial Support
       {
@@ -64,10 +53,10 @@ window.CAMPUS_DIRECTORY = {
         ]
       },
       {
-        name: "Local Food Assistance",
+        name: "Food & Essentials",
         type: "Financial Support",
         tags: ["financial_support"],
-        notes: "Food pantries and meal support nearby",
+        notes: "Food pantries and student support nearby",
         links: [
           { label: "Find food support", url: "https://www.foodpantries.org/st/new_brunswick-nj" }
         ]
@@ -85,7 +74,7 @@ window.CAMPUS_DIRECTORY = {
         ]
       },
       {
-        name: "On-Campus Safety & Crisis Center",
+        name: "Campus Safety & Crisis Center",
         type: "Crisis Support",
         tags: ["crisis"],
         notes: "Immediate support for students on campus",
@@ -99,7 +88,6 @@ window.CAMPUS_DIRECTORY = {
   "rutgers_nk": {
     displayName: "Rutgers — Newark",
     resources: [
-      // Mental Health
       {
         name: "Newark Counseling Center",
         type: "Mental Health",
@@ -110,38 +98,14 @@ window.CAMPUS_DIRECTORY = {
         ]
       },
       {
-        name: "Nearby Therapists",
-        type: "Mental Health",
-        tags: ["mental_health"],
-        notes: "Private therapists and counseling centers in Newark",
-        links: [
-          { label: "Find a therapist", url: "https://www.psychologytoday.com/us/therapists/newark-nj" }
-        ]
-      },
-
-      // Social Support
-      {
-        name: "Student Peer Groups",
-        type: "Social Support",
-        tags: ["social_support"],
-        notes: "Clubs and peer support networks",
-        links: [
-          { label: "Explore clubs", url: "https://newark.campuslabs.com/" }
-        ]
-      },
-
-      // Financial Support
-      {
         name: "Financial Aid Office",
         type: "Financial Support",
         tags: ["financial_support"],
         notes: "Assistance with tuition and bills",
         links: [
-          { label: "Visit Financial Aid", url: "https://financialaid.rutgers.edu/" }
+          { label: "Visit Financial Aid", url: "https://www.newark.rutgers.edu/student-life/financial-aid" }
         ]
       },
-
-      // Crisis / Suicide
       {
         name: "Crisis Hotline",
         type: "Crisis Support",
@@ -158,7 +122,6 @@ window.CAMPUS_DIRECTORY = {
   "nyu": {
     displayName: "New York University",
     resources: [
-      // Mental Health
       {
         name: "NYU Wellness Center",
         type: "Mental Health",
@@ -169,47 +132,14 @@ window.CAMPUS_DIRECTORY = {
         ]
       },
       {
-        name: "Nearby Therapists",
-        type: "Mental Health",
-        tags: ["mental_health"],
-        notes: "Private therapists in NYC",
-        links: [
-          { label: "Find a therapist", url: "https://www.psychologytoday.com/us/therapists/new-york-ny" }
-        ]
-      },
-
-      // Social Support
-      {
-        name: "Student Groups",
-        type: "Social Support",
-        tags: ["social_support"],
-        notes: "Clubs and social events at NYU",
-        links: [
-          { label: "Explore student groups", url: "https://www.nyu.edu/students/student-life.html" }
-        ]
-      },
-      {
-        name: "Community Meetups",
-        type: "Social Support",
-        tags: ["social_support"],
-        notes: "Meet people in NYC",
-        links: [
-          { label: "Meetup NYC", url: "https://www.meetup.com/cities/us/ny/new_york/" }
-        ]
-      },
-
-      // Financial Support
-      {
         name: "Financial Aid Office",
         type: "Financial Support",
         tags: ["financial_support"],
-        notes: "Assistance with tuition and living costs",
+        notes: "Assistance with tuition and student expenses",
         links: [
-          { label: "Visit Financial Aid", url: "https://www.nyu.edu/admissions/financial-aid.html" }
+          { label: "Visit Financial Aid", url: "https://www.nyu.edu/students/financial-aid.html" }
         ]
       },
-
-      // Crisis / Suicide
       {
         name: "Crisis Hotline",
         type: "Crisis Support",
