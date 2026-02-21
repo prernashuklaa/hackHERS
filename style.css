@@ -419,3 +419,21 @@ button:not(.smallBtn):hover {
   40%, 80% { transform: translateX(6px); }
 }
 
+/* Customed Background */
+#mascot-overlay {
+  position: fixed;
+  bottom: -40px;
+  right: -40px;
+  font-size: 300px;
+  pointer-events: none; /* 确保不挡住按钮点击 */
+  z-index: -1;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: grayscale(0.4);
+}
+
+.logoText {
+  background: linear-gradient(135deg, var(--primary), var(--primary2)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
