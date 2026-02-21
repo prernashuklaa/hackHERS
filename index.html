@@ -1,7 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Compass</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -21,21 +23,23 @@
     </div>
 
     <div class="grid">
-      <label class="muted" for="campusSelect" style="display:block; margin-top:10px;">
-  Choose your campus (optional):
-</label>
-
-<select id="campusSelect" class="searchBox" onchange="renderCampusHint()">
-  <option value="">No campus selected</option>
-  <option value="rutgers_nb">Rutgers — New Brunswick</option>
-  <option value="rutgers_nk">Rutgers — Newark</option>
-  <option value="nyu">NYU</option>
-</select>
-
-<p id="campusHint" class="muted" style="margin-top:8px;"></p>
-      <div class="panel">
+      <!-- BIG LEFT: Get guidance -->
+      <div class="panel panel-main">
         <h2>Get guidance</h2>
         <p class="muted">Use plain language. Example: “I’m overwhelmed with classes and can’t focus.”</p>
+
+        <label class="muted" for="campusSelect" style="display:block; margin-top:10px;">
+          Choose your campus (optional):
+        </label>
+
+        <select id="campusSelect" class="searchBox" onchange="renderCampusHint()">
+          <option value="">No campus selected</option>
+          <option value="rutgers_nb">Rutgers — New Brunswick</option>
+          <option value="rutgers_nk">Rutgers — Newark</option>
+          <option value="nyu">NYU</option>
+        </select>
+
+        <p id="campusHint" class="muted" style="margin-top:8px;"></p>
 
         <textarea id="inputBox" placeholder="What’s going on?"></textarea>
 
@@ -44,31 +48,54 @@
           <button class="smallBtn" onclick="clearInput()">Clear</button>
         </div>
 
-        <div id="output" class="output"></div>
-      </div>
-
-      <div class="panel">
-        <h2>Saved chats</h2>
-        <input
-          id="searchBox"
-          class="searchBox"
-          placeholder="Search chats (ex: anxiety, tutoring, money)…"
-          oninput="renderChatHistory()"
-        />
-        <p class="muted" style="margin-top:10px;">
-          Chats are saved locally in your browser (private to your device).
-        </p>
-
-        <div class="row">
-          <button class="smallBtn" onclick="exportChats()">Export</button>
-          <button class="smallBtn" onclick="deleteAllChats()">Delete all</button>
+        <!-- Tabs -->
+        <div class="tabs">
+          <button class="tab active" id="tabResults" onclick="showTab('results')">Results</button>
+          <button class="tab" id="tabChats" onclick="showTab('chats')">Saved chats</button>
         </div>
 
-        <div id="history"></div>
+        <!-- Tab content -->
+        <div id="tabContentResults">
+          <div id="output" class="output"></div>
+        </div>
+
+        <div id="tabContentChats" style="display:none;">
+          <input
+            id="searchBox"
+            class="searchBox"
+            placeholder="Search chats (ex: anxiety, tutoring, money)…"
+            oninput="renderChatHistory()"
+          />
+          <p class="muted" style="margin-top:10px;">
+            Chats are saved locally in your browser (private to your device).
+          </p>
+
+          <div class="row">
+            <button class="smallBtn" onclick="exportChats()">Export</button>
+            <button class="smallBtn" onclick="deleteAllChats()">Delete all</button>
+          </div>
+
+          <div id="history"></div>
+        </div>
       </div>
 
-    </div>
-  </div>
+      <!-- SMALL RIGHT: sidebar -->
+      <div class="panel panel-side">
+        <h2>Quick links</h2>
+        <p class="muted">Fast access for urgent situations.</p>
+
+        <div class="card" style="margin-top:10px;">
+          <h3 style="margin-top:0;">Emergency resources</h3>
+          <p class="muted">Hotlines and national support numbers.</p>
+          <div class="actions">
+            <a class="linkBtn" href="emergency.html">Open Emergency Page</a>
+          </div>
+        </div>
+      </div>
+    </div> <!-- end .grid -->
+
+  </div> <!-- end .container -->
+
   <script src="campuses.js"></script>
   <script src="script.js"></script>
 </body>
