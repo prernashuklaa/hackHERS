@@ -22,7 +22,7 @@ const CAMPUS_DIRECTORY = {
     {
       tags: ["financial"],
       name: "Scarlet Hub — Office of Financial Aid",
-      type: "Financial support",
+      type: "Financial",
       notes: "Financial aid guidance, eligibility, awards, and counseling across Rutgers campuses.",
       url: "https://scarlethub.rutgers.edu/"
     }
