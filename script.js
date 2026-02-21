@@ -26,7 +26,6 @@ function applyTheme(theme) {
   const isDark = t === "dark";
 
   if (icon) icon.textContent = isDark ? "☀️" : "🌙";
-  // FIX: was `textContent = ...` (missing `text.`)
   if (text) text.textContent = isDark ? "Light" : "Dark";
 }
 
@@ -47,7 +46,6 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 window.addEventListener("load", () => {
-  // Don’t crash on pages that don’t have these elements (ex: emergency.html)
   if (document.getElementById("campusHint")) renderCampusHint();
   if (document.getElementById("history")) renderChatHistory();
 });
@@ -76,7 +74,6 @@ window.handleCampusSearch = function handleCampusSearch() {
   const select = document.getElementById("campusSelect");
   const dir = getCampusDirectory();
 
-  // Match typed campus name to known displayName
   const matchedKey = Object.keys(dir).find(
     (k) => (dir[k].displayName || "").toLowerCase().includes(val)
   );
@@ -86,7 +83,6 @@ window.handleCampusSearch = function handleCampusSearch() {
     customCampusName = "";
   } else {
     if (select) select.value = "";
-    // Store what the user typed (not forced lowercase)
     customCampusName = rawVal;
   }
 
@@ -116,7 +112,6 @@ function buildCampusRecommendations(campusKey, text) {
   const campus = dir[campusKey];
   if (!Array.isArray(campus.resources)) return [];
 
-  // Your teammate’s approach: match tags by checking if the user text includes the tag
   const t = (text || "").toLowerCase();
   const hits = campus.resources.filter((r) =>
     (r.tags || []).some((tag) => t.includes(String(tag).toLowerCase()))
@@ -165,7 +160,7 @@ window.analyze = function analyze() {
 };
 
 /* =========================
-   CAMPUS + OFF-CAMPUS RENDER
+   RENDER
 ========================= */
 function renderResults(outputEl, userText, recs, campusRecs, campusKey, loc, isReopen = false) {
   const dir = getCampusDirectory();
@@ -235,7 +230,7 @@ function buildMapsLink(query, loc, campusLabel) {
 }
 
 /* =========================
-   CHAT STORAGE + HISTORY UI
+   CHAT HISTORY
 ========================= */
 function loadChats() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
@@ -271,18 +266,15 @@ window.openChat = function openChat(chatId) {
   const chat = chats.find(c => c.id === chatId);
   if (!chat) return;
 
-  // Restore campus
   const select = document.getElementById("campusSelect");
   if (select) select.value = chat.campusKey || "";
 
-  // Restore campusSearch text + customCampusName
   const campusSearch = document.getElementById("campusSearch");
   customCampusName = chat.customCampusName || "";
   if (campusSearch) campusSearch.value = customCampusName;
 
   renderCampusHint();
 
-  // Restore input
   const inputEl = document.getElementById("inputBox");
   if (inputEl) inputEl.value = chat.userText || "";
 
@@ -291,7 +283,6 @@ window.openChat = function openChat(chatId) {
 
   const campusRecs = buildCampusRecommendations(chat.campusKey || "", chat.userText || "");
 
-  // Render with fresh location if allowed
   getLocation()
     .then((loc) => renderResults(outputEl, chat.userText || "", chat.recs || [], campusRecs, chat.campusKey || "", loc, true))
     .catch(() => renderResults(outputEl, chat.userText || "", chat.recs || [], campusRecs, chat.campusKey || "", null, true));
@@ -311,7 +302,6 @@ window.renderChatHistory = function renderChatHistory() {
     const campusName =
       (c.campusKey && dir[c.campusKey]) ? dir[c.campusKey].displayName :
       (c.customCampusName || "");
-
     const blob = `${c.userText} ${c.summary} ${(c.categories || []).join(" ")} ${campusName}`.toLowerCase();
     return !q || blob.includes(q);
   });
@@ -360,33 +350,7 @@ window.exportChats = function exportChats() {
 };
 
 /* =========================
-   UTILS
-========================= */
-function prettyTag(key) {
-  const map = {
-    crisis: "Urgent",
-    mental_health: "Mental health",
-    focus_support: "Focus",
-    academic_support: "Academics",
-    financial_support: "Financial",
-    social_support: "Social",
-    general_support: "General"
-  };
-  return map[key] || key;
-}
-
-function escapeAttr(str) {
-  return String(str).replaceAll("'", "\\'");
-}
-
-function escapeHtml(str) {
-  return String(str)
-    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
-}
-
-/* =========================
-   CATEGORIES + OFF-CAMPUS LIBRARY
+   MATCHING
 ========================= */
 function categorize(text) {
   const t = text.toLowerCase();
@@ -420,6 +384,32 @@ function buildRecommendations(categories) {
 }
 
 /* =========================
+   UTILS
+========================= */
+function prettyTag(key) {
+  const map = {
+    crisis: "Urgent",
+    mental_health: "Mental health",
+    focus_support: "Focus",
+    academic_support: "Academics",
+    financial_support: "Financial",
+    social_support: "Social",
+    general_support: "General"
+  };
+  return map[key] || key;
+}
+
+function escapeAttr(str) {
+  return String(str).replaceAll("'", "\\'");
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+
+/* =========================
    LOCATION
 ========================= */
 function getLocation() {
@@ -431,4 +421,5 @@ function getLocation() {
       {enableHighAccuracy:false, timeout:5000, maximumAge:600000}
     );
   });
+}
 }
