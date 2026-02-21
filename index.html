@@ -4,26 +4,33 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Compass</title>
+
   <link rel="stylesheet" href="style.css?v=3" />
+
+  <!-- Fonts: DM Serif + Inter. Recoleta is loaded locally via CSS @font-face if you add the file -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
 
     <div class="header">
       <div class="brand">
-        <h1>Compass</h1>
+        <h1 class="logo">
+          <span class="logoMark" aria-hidden="true">🧭</span>
+          <span class="logoText">Compass</span>
+        </h1>
         <p class="subtitle">Describe what’s going on, and we’ll help you find the right support.</p>
       </div>
 
-     <div class="nav">
-  <a class="navLink" href="index.html">Home</a>
-  <a class="navLink" href="emergency.html">Emergency</a>
+      <div class="nav">
+        <a class="navLink" href="index.html">Home</a>
+        <a class="navLink" href="emergency.html">Emergency</a>
 
-  <button class="themeToggle" id="themeToggle" type="button" onclick="toggleTheme()">
-    <span class="toggleIcon" aria-hidden="true">🌙</span>
-    <span class="toggleText">Dark</span>
-  </button>
-</div>
+        <button class="themeToggle" id="themeToggle" type="button" onclick="toggleTheme()">
+          <span class="toggleIcon" aria-hidden="true">🌙</span>
+          <span class="toggleText">Dark</span>
+        </button>
+      </div>
     </div>
 
     <div class="grid">
@@ -43,11 +50,11 @@
           <option value="nyu">NYU</option>
         </select>
 
-        <input 
-          id="campusSearch" 
-          class="searchBox" 
-          style="margin-top:8px;" 
-          placeholder="Or search your school (any U.S. university)" 
+        <input
+          id="campusSearch"
+          class="searchBox"
+          style="margin-top:8px;"
+          placeholder="Or type a school name (adds it to searches)"
           oninput="handleCampusSearch()"
         />
 
@@ -86,6 +93,11 @@
       </div>
     </div>
   </div>
+
+  <script src="campuses.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
 
   <script src="campuses.js"></script>
   <script src="script.js"></script>
