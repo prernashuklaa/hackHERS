@@ -74,4 +74,13 @@ window.renderCampusHint = function renderCampusHint() {
     hintEl.textContent = "Tip: selecting a campus shows on-campus offices first.";
   }
 };
-
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.getElementById("campusSearch");
+    if (searchInput) {
+        searchInput.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                window.confirmCampusSearch();
+            }
+        });
+    }
+});
