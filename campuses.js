@@ -8,7 +8,7 @@ const CAMPUS_DIRECTORY = {
     {
       tags: ["mental_health", "crisis"],
       name: "CAPS (Counseling, ADAP & Psychiatric Services)",
-      type: "On-campus counseling",
+      type: "counseling",
       notes: "Crisis support, individual/group counseling, workshops, psychiatric services, and referrals.",
       url: "https://health.rutgers.edu/counseling-services"
     },
