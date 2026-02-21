@@ -27,7 +27,6 @@ function buildCampusRecommendations(campusKey, text) {
   const KEYWORD_TAG_MAP = {
     "lonely": "social_support",
     "drained": "social_support",
-    "drained": "mental_health",
     "alone": "social_support",
     "friends": "social_support",
     "anxious": "mental_health",
