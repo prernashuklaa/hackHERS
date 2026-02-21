@@ -1,28 +1,38 @@
 // campuses.js
 window.CAMPUS_DIRECTORY = {
-  rutgers_nb: {
+  "rutgers_nb": {
     displayName: "Rutgers — New Brunswick",
     resources: [
       {
-        name: "Counseling Center",
-        type: "Mental health",
-        tags: ["mental_health", "social_support"],
-        notes: "Call to schedule an appointment",
-        links: [
-          { label: "Website", url: "https://health.rutgers.edu/counseling/" }
-        ]
-      },
-      {
         name: "Group Offerings",
-        type: "Mental health",
-        tags: ["mental_health", "social_support"],
-        notes: "Group therapy sessions for students",
+        type: "Mental Health / Therapy",
+        tags: ["mental_health"],
+        notes: "Peer and therapy groups at Rutgers",
         links: [
           { label: "View group offerings", url: "https://health.rutgers.edu/counseling-services/therapy-options/group-offerings" }
         ]
       },
+      {
+        name: "Counseling Services",
+        type: "Mental Health",
+        tags: ["mental_health"],
+        notes: "Individual counseling available on campus",
+        links: [
+          { label: "Learn more", url: "https://health.rutgers.edu/counseling-services/" }
+        ]
+      },
+      {
+        name: "Peer Support",
+        type: "Social Support",
+        tags: ["social_support"],
+        notes: "Student peer groups and clubs",
+        links: [
+          { label: "Find peer groups", url: "https://rutgers.campuslabs.com/" }
+        ]
+      }
     ]
   },
+  
   rutgers_nk: {
     displayName: "Rutgers — Newark",
     resources: [
