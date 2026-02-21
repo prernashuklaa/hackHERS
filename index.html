@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,13 +16,13 @@
       </div>
 
       <div class="nav">
-        <a href="index.html">Home</a>
-        <a href="emergency.html">Emergency</a>
+        <a class="navLink" href="index.html">Home</a>
+        <a class="navLink" href="emergency.html">Emergency</a>
       </div>
     </div>
 
     <div class="grid">
-      <!-- BIG LEFT: Get guidance -->
+      <!-- LEFT (BIG): Guidance -->
       <div class="panel panel-main">
         <h2>Get guidance</h2>
         <p class="muted">Use plain language. Example: “I’m overwhelmed with classes and can’t focus.”</p>
@@ -48,53 +47,32 @@
           <button class="smallBtn" onclick="clearInput()">Clear</button>
         </div>
 
-        <!-- Tabs -->
-        <div class="tabs">
-          <button class="tab active" id="tabResults" onclick="showTab('results')">Results</button>
-          <button class="tab" id="tabChats" onclick="showTab('chats')">Saved chats</button>
-        </div>
-
-        <!-- Tab content -->
-        <div id="tabContentResults">
-          <div id="output" class="output"></div>
-        </div>
-
-        <div id="tabContentChats" style="display:none;">
-          <input
-            id="searchBox"
-            class="searchBox"
-            placeholder="Search chats (ex: anxiety, tutoring, money)…"
-            oninput="renderChatHistory()"
-          />
-          <p class="muted" style="margin-top:10px;">
-            Chats are saved locally in your browser (private to your device).
-          </p>
-
-          <div class="row">
-            <button class="smallBtn" onclick="exportChats()">Export</button>
-            <button class="smallBtn" onclick="deleteAllChats()">Delete all</button>
-          </div>
-
-          <div id="history"></div>
-        </div>
+        <div id="output" class="output"></div>
       </div>
 
-      <!-- SMALL RIGHT: sidebar -->
+      <!-- RIGHT: Saved chats -->
       <div class="panel panel-side">
-        <h2>Quick links</h2>
-        <p class="muted">Fast access for urgent situations.</p>
+        <h2>Saved chats</h2>
+        <input
+          id="searchBox"
+          class="searchBox"
+          placeholder="Search chats (ex: anxiety, tutoring, money)…"
+          oninput="renderChatHistory()"
+        />
 
-        <div class="card" style="margin-top:10px;">
-          <h3 style="margin-top:0;">Emergency resources</h3>
-          <p class="muted">Hotlines and national support numbers.</p>
-          <div class="actions">
-            <a class="linkBtn" href="emergency.html">Open Emergency Page</a>
-          </div>
+        <p class="muted" style="margin-top:10px;">
+          Click a chat to reopen the recommendations.
+        </p>
+
+        <div class="row">
+          <button class="smallBtn" onclick="exportChats()">Export</button>
+          <button class="smallBtn" onclick="deleteAllChats()">Delete all</button>
         </div>
-      </div>
-    </div> <!-- end .grid -->
 
-  </div> <!-- end .container -->
+        <div id="history"></div>
+      </div>
+    </div>
+  </div>
 
   <script src="campuses.js"></script>
   <script src="script.js"></script>
