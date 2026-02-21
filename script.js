@@ -148,19 +148,23 @@ window.renderCampusHint = function renderCampusHint() {
     "Tip: selecting a campus shows on-campus offices first.";
 };
 
-function buildCampusRecommendations(campusKey, categories) {
+function buildCampusRecommendations(campusKey, text) {
   const dir = getCampusDirectory();
   if (!campusKey || !dir?.[campusKey]) return [];
 
   const campus = dir[campusKey];
   if (!Array.isArray(campus.resources)) return [];
 
+  const t = (text || "").toLowerCase();
+
+  // Match resource tags directly against words in the input text
   const hits = campus.resources.filter((r) =>
-    (r.tags || []).some((tag) => categories.includes(tag))
+    (r.tags || []).some((tag) => t.includes(tag))
   );
 
+  // If nothing matches, show top 2 resources as fallback
   if (hits.length === 0) return campus.resources.slice(0, 2);
-  return hits.slice(0, 4);
+  return hits.slice(0, 4); // return up to 4 matching resources
 }
 
 /* =========================
@@ -170,7 +174,7 @@ function buildCampusRecommendations(campusKey, categories) {
 window.analyze = function analyze() {
   const inputEl = document.getElementById("inputBox");
   const outputEl = document.getElementById("output");
-  if (!inputEl || !outputEl) return; // safe on emergency.html
+  if (!inputEl || !outputEl) return;
 
   const text = (inputEl.value || "").trim();
   if (!text) {
@@ -185,12 +189,17 @@ window.analyze = function analyze() {
     </div>
   `;
 
+  // Categorize user text (for off-campus/general suggestions)
   const categories = categorize(text);
+
+  // Get general/off-campus recommendations
   const recs = buildRecommendations(categories);
 
+  // Get campus-specific resources based on input text
   const campusKey = getSelectedCampusKey();
-  const campusRecs = buildCampusRecommendations(campusKey, categories);
+  const campusRecs = buildCampusRecommendations(campusKey, text);
 
+  // Attempt to get location for off-campus search
   getLocation()
     .then((loc) => {
       renderResults(outputEl, text, recs, campusRecs, campusKey, loc, false);
