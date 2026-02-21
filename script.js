@@ -172,15 +172,23 @@ function renderResults(outputEl, userText, recs, campusRecs, campusKey, loc, isR
         <h3>On-campus options${campus ? ` — ${escapeHtml(campus.displayName)}` : ""}</h3>
         <ul class="steps">
           ${campusRecs.map(r => {
-            const links = Array.isArray(r.links) ? r.links : [];
-            return `<li>
-              <strong>${escapeHtml(r.name)}</strong> — ${escapeHtml(r.type || "Campus resource")}
-              ${r.notes ? `<div class="muted">${escapeHtml(r.notes)}</div>` : ""}
-              ${links.length ? `<div style="margin-top:6px; display:flex; gap:10px; flex-wrap:wrap;">
-                ${links.map(l => `<a class="link" href="${l.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.label)}</a>`).join("")}
-              </div>` : ""}
-            </li>`;
-          }).join("")}
+  const links = Array.isArray(r.links) ? r.links : [];
+  return `
+    <li>
+      <strong>${escapeHtml(r.name)}</strong> — ${escapeHtml(r.type || "Campus resource")}
+      ${r.notes ? `<div class="muted">${escapeHtml(r.notes)}</div>` : ""}
+      ${links.length ? `
+        <div style="margin-top:6px; display:flex; gap:10px; flex-wrap:wrap;">
+          ${links.map(l => `
+            <a class="link" href="${l.url}" target="_blank" rel="noopener noreferrer">
+              ${escapeHtml(l.label)}
+            </a>
+          `).join("")}
+        </div>
+      ` : ""}
+    </li>
+  `;
+}).join("")}
         </ul>
       </div>` : "";
 
