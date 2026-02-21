@@ -102,6 +102,8 @@ const KEYWORD_TAG_MAP = {
   groceries: "financial_support",
   job: "financial_support",
   debt: "financial_support",
+  finance: "financial_support",
+  financial: "financial_support",
 
   // Crisis / suicidal
   suicidal: "crisis",
