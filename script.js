@@ -106,29 +106,34 @@ window.renderCampusHint = function renderCampusHint() {
 };
 
 /* =========================
-   CAMPUS RECOMMENDATIONS
+   CAMPUS RECOMMENDATIONS (FILTER BY USER INPUT)
 ========================= */
-function buildCampusRecommendations(campusKey, text) {
+function buildCampusRecommendations(campusKey, userText) {
   const dir = getCampusDirectory();
+  const keywords = (userText || "").toLowerCase().split(/\W+/);
 
-  if (campusKey && dir[campusKey]) {
-    const campus = dir[campusKey];
-    if (!Array.isArray(campus.resources)) return [];
+  let resources = [];
 
-    // Return all resources for the selected campus
-    return campus.resources.slice();
+  if (campusKey && dir[campusKey] && Array.isArray(dir[campusKey].resources)) {
+    // Filter campus resources by input keywords
+    resources = dir[campusKey].resources.filter(resource =>
+      (resource.tags || []).some(tag => keywords.includes(tag.toLowerCase()))
+    );
   }
 
-  // If no campus selected, return any social_support resources from all campuses
-  let allResources = [];
-  Object.values(dir).forEach(campus => {
-    if (Array.isArray(campus.resources)) {
-      allResources = allResources.concat(
-        campus.resources.filter(r => (r.tags || []).includes("social_support"))
-      );
-    }
-  });
-  return allResources.slice(0, 3); // show up to 3 options
+  // If no campus selected or no matches, fallback: show social_support from all campuses
+  if (!resources.length) {
+    Object.values(dir).forEach(campus => {
+      if (Array.isArray(campus.resources)) {
+        resources = resources.concat(
+          campus.resources.filter(r => (r.tags || []).includes("social_support"))
+        );
+      }
+    });
+    resources = resources.slice(0, 3); // limit to 3 fallback options
+  }
+
+  return resources;
 }
 
 /* =========================
@@ -171,7 +176,77 @@ window.analyze = function analyze() {
 };
 
 /* =========================
-   CATEGORIZATION
+   RENDER RESULTS
+========================= */
+function renderResults(outputEl, userText, recs, campusRecs, campusKey, loc, isReopen = false) {
+  const dir = getCampusDirectory();
+  const campus = campusKey && dir[campusKey] ? dir[campusKey] : null;
+  const campusLabel = campus ? campus.displayName : (customCampusName || "");
+
+  const campusSection = campusRecs.length
+    ? `<div class="card">
+        <h3>On-campus options${campus ? ` — ${escapeHtml(campus.displayName)}` : ""}</h3>
+        <ul class="steps">
+          ${campusRecs.map(r => {
+            const links = Array.isArray(r.links) ? r.links : [];
+            return `
+              <li>
+                <strong>${escapeHtml(r.name)}</strong> — ${escapeHtml(r.type || "Campus resource")}
+                ${r.notes ? `<div class="muted">${escapeHtml(r.notes)}</div>` : ""}
+                ${links.length ? `
+                  <div style="margin-top:6px; display:flex; gap:10px; flex-wrap:wrap;">
+                    ${links.map(l => `
+                      <a class="link" href="${l.url}" target="_blank" rel="noopener noreferrer">
+                        ${escapeHtml(l.label)}
+                      </a>
+                    `).join("")}
+                  </div>
+                ` : ""}
+              </li>
+            `;
+          }).join("")}
+        </ul>
+      </div>` : "";
+
+  const offCampusCards = recs.map(r => {
+    const mapsLink = buildMapsLink(r.searchQuery, loc, campusLabel);
+    return `<div class="card">
+      <h3>${escapeHtml(r.title)}</h3>
+      <p class="why">${escapeHtml(r.why)}</p>
+      <ul class="steps">${r.next.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ul>
+      <div class="actions">
+        <a class="linkBtn" href="${mapsLink}" target="_blank" rel="noopener noreferrer">Search near me</a>
+      </div>
+    </div>`;
+  }).join("");
+
+  outputEl.innerHTML = `
+    <div class="disclaimer">
+      <strong>Note:</strong> Compass provides informational guidance, not medical or legal advice.
+      If you feel unsafe or in immediate danger, use the Emergency tab.
+    </div>
+
+    <div class="chatItem" style="margin-top:12px;">
+      <div class="meta">
+        <span>${isReopen ? "Reopened chat" : "Your message"}${campusLabel ? ` • ${escapeHtml(campusLabel)}` : ""}</span>
+        <span>${isReopen ? "From saved history" : "Saved to history"}</span>
+      </div>
+      <p style="margin:10px 0 0 0;">“${escapeHtml(userText)}”</p>
+    </div>
+
+    ${campusSection}
+
+    <div class="card">
+      <h3>Off-campus options nearby</h3>
+      <p class="muted">Community resources you can access near your location.</p>
+    </div>
+
+    ${offCampusCards}
+  `;
+}
+
+/* =========================
+   UTILS
 ========================= */
 function categorize(text) {
   const t = text.toLowerCase();
@@ -188,4 +263,35 @@ function categorize(text) {
 
 function hasAny(text, keywords) {
   return keywords.some(k => text.includes(k));
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function buildMapsLink(query, loc, campusLabel) {
+  const extra = campusLabel ? ` ${campusLabel}` : "";
+  const q = encodeURIComponent(`${query}${extra} near me`);
+  return loc
+    ? `https://www.google.com/maps/search/?api=1&query=${q}&center=${loc.lat},${loc.lon}`
+    : `https://www.google.com/maps/search/?api=1&query=${q}`;
+}
+
+/* =========================
+   LOCATION
+========================= */
+function getLocation() {
+  return new Promise((resolve,reject)=>{
+    if(!navigator.geolocation) return reject(new Error("no geolocation"));
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({lat: pos.coords.latitude, lon: pos.coords.longitude}),
+      () => reject(new Error("denied")),
+      {enableHighAccuracy:false, timeout:5000, maximumAge:600000}
+    );
+  });
 }
