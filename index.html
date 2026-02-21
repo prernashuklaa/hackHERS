@@ -21,7 +21,18 @@
     </div>
 
     <div class="grid">
+      <label class="muted" for="campusSelect" style="display:block; margin-top:10px;">
+  Choose your campus (optional):
+</label>
 
+<select id="campusSelect" class="searchBox" onchange="renderCampusHint()">
+  <option value="">No campus selected</option>
+  <option value="rutgers_nb">Rutgers — New Brunswick</option>
+  <option value="rutgers_nk">Rutgers — Newark</option>
+  <option value="nyu">NYU</option>
+</select>
+
+<p id="campusHint" class="muted" style="margin-top:8px;"></p>
       <div class="panel">
         <h2>Get guidance</h2>
         <p class="muted">Use plain language. Example: “I’m overwhelmed with classes and can’t focus.”</p>
