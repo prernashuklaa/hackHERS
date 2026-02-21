@@ -31,7 +31,7 @@ window.CAMPUS_DIRECTORY = {
         ]
       },
       {
-        name: "Peer Support Groups",
+        name: "Peer Support",
         type: "Social Support",
         tags: ["social_support"],
         notes: "Student peer groups and clubs",
@@ -40,7 +40,9 @@ window.CAMPUS_DIRECTORY = {
         ]
       }
     ]
-  },
+  }
+};
+
   "rutgers_nk": {
     displayName: "Rutgers — Newark",
     resources: [
