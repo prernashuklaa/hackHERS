@@ -422,5 +422,5 @@ button:not(.smallBtn):hover {
 }
 
 .no-results-active { 
-  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; 
+  animation: shake 0.4s ease-in-out !important;
 }
