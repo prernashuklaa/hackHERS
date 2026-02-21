@@ -94,6 +94,7 @@ body {
   background: var(--surface);
   border: 1px solid rgba(255,255,255,0.25);
   box-shadow: var(--shadowLg);
+   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
@@ -400,3 +401,20 @@ button:not(.smallBtn):hover {
   font-weight: 800;
 }
 .phoneLink:hover, .link:hover { opacity: 0.85; }
+
+/* Searching- Empty State */
+.no-results {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+  font-style: italic;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.no-results-active { 
+  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; 
+}
