@@ -13,11 +13,34 @@ window.CAMPUS_DIRECTORY = {
         ]
       },
       {
+        name: "Group Offerings",
+        type: "Mental health",
+        tags: ["mental_health", "social_support"],
+        notes: "Group therapy sessions for students",
+        links: [
+          { label: "View group offerings", url: "https://health.rutgers.edu/counseling-services/therapy-options/group-offerings" }
+        ]
+      },
+      {
         name: "Peer Support Group",
         type: "Social support",
         tags: ["social_support"],
         notes: "Join weekly meetings",
         links: []
+      }
+    ]
+  },
+  rutgers_nk: {
+    displayName: "Rutgers — Newark",
+    resources: [
+      {
+        name: "Newark Counseling Center",
+        type: "Mental health",
+        tags: ["mental_health"],
+        notes: "Call to schedule an appointment",
+        links: [
+          { label: "Website", url: "https://www.newark.rutgers.edu/student-life/counseling-center" }
+        ]
       }
     ]
   },
