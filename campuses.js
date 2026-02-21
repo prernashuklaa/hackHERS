@@ -1,9 +1,8 @@
 // campuses.js
 // Simple campus directory. Add/edit entries for your campus.
 
-// campuses.js
+window.CAMPUS_DIRECTORY = {
 
-const CAMPUS_DIRECTORY = {
   rutgers_nb: {
     displayName: "Rutgers — New Brunswick",
     resources: [
@@ -63,19 +62,22 @@ const CAMPUS_DIRECTORY = {
         ]
       }
     ]
-  }
-};
+  },
 
-export default CAMPUS_DIRECTORY;
   rutgers_nk: {
     displayName: "Rutgers — Newark",
     resources: [
       {
         tags: ["mental_health", "crisis"],
-        name: "Counseling Center",
+        name: "Rutgers Newark Counseling Center",
         type: "On-campus counseling",
         notes: "Counseling and mental health support.",
-        url: "https://www.newark.rutgers.edu"
+        links: [
+          {
+            label: "Rutgers Newark Website",
+            url: "https://www.newark.rutgers.edu"
+          }
+        ]
       }
     ]
   },
@@ -85,11 +87,17 @@ export default CAMPUS_DIRECTORY;
     resources: [
       {
         tags: ["mental_health", "crisis"],
-        name: "Counseling and Wellness Center",
+        name: "NYU Counseling and Wellness Center",
         type: "On-campus counseling",
         notes: "Mental health and wellness support for students.",
-        url: "https://www.nyu.edu"
+        links: [
+          {
+            label: "NYU Website",
+            url: "https://www.nyu.edu"
+          }
+        ]
       }
     ]
   }
+
 };
