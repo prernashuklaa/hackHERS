@@ -21,13 +21,6 @@ window.CAMPUS_DIRECTORY = {
           { label: "View group offerings", url: "https://health.rutgers.edu/counseling-services/therapy-options/group-offerings" }
         ]
       },
-      {
-        name: "Peer Support Group",
-        type: "Social support",
-        tags: ["social_support"],
-        notes: "Join weekly meetings",
-        links: []
-      }
     ]
   },
   rutgers_nk: {
