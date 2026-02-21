@@ -4,26 +4,33 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Compass — Emergency</title>
+
   <link rel="stylesheet" href="style.css?v=3" />
+
+  <!-- Fonts: DM Serif + Inter. Recoleta is loaded locally via CSS @font-face if you add the file -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
 
     <div class="header">
       <div class="brand">
-        <h1>Emergency Resources (US)</h1>
-        <p class="subtitle">If you’re in immediate danger, call emergency services right away.</p>
+        <h1 class="logo logoSmall">
+          <span class="logoMark" aria-hidden="true">🧭</span>
+          <span class="logoText">Compass</span>
+        </h1>
+        <p class="subtitle">Emergency resources (US). If you’re in immediate danger, call emergency services right away.</p>
       </div>
 
       <div class="nav">
-  <a class="navLink" href="index.html">Home</a>
-  <a class="navLink" href="emergency.html">Emergency</a>
+        <a class="navLink" href="index.html">Home</a>
+        <a class="navLink" href="emergency.html">Emergency</a>
 
-  <button class="themeToggle" id="themeToggle" type="button" onclick="toggleTheme()">
-    <span class="toggleIcon" aria-hidden="true">🌙</span>
-    <span class="toggleText">Dark</span>
-  </button>
-</div>
+        <button class="themeToggle" id="themeToggle" type="button" onclick="toggleTheme()">
+          <span class="toggleIcon" aria-hidden="true">🌙</span>
+          <span class="toggleText">Dark</span>
+        </button>
+      </div>
     </div>
 
     <div class="card">
@@ -87,6 +94,8 @@
     </p>
 
   </div>
+
+  <!-- Needed so the dark mode toggle works on this page -->
   <script src="script.js"></script>
 </body>
 </html>
