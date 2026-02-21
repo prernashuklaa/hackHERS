@@ -1,6 +1,3 @@
-/* =========================
-   CAMPUS SEARCH
-========================= */
 console.log("campusSearch.js loaded");
 window.confirmCampusSearch = function confirmCampusSearch() {
    console.log("Search button clicked");
