@@ -1,66 +1,128 @@
-// Compass - script.js
-// Stores chats in localStorage (works on GitHub Pages without a backend)
+// script.js
+// Compass - theme + chat logic (safe on every page)
 
 const STORAGE_KEY = "compass_chats_v2";
 const THEME_KEY = "compass_theme_v1";
 
-function applyTheme(theme) {
-  document.documentElement.setAttribute("data-theme", theme);
-  const btn = document.getElementById("themeToggle");
-  if (btn) {
-    const icon = btn.querySelector(".toggleIcon");
-    const text = btn.querySelector(".toggleText");
-    const isDark = theme === "dark";
-    if (icon) icon.textContent = isDark ? "☀️" : "🌙";
-    if (text) text.textContent = isDark ? "Light" : "Dark";
-  }
+// Safe global access: campuses.js should define window.CAMPUS_DIRECTORY
+function getCampusDirectory() {
+  return window.CAMPUS_DIRECTORY || null;
 }
 
-function toggleTheme() {
+/* =========================
+   THEME (Light/Dark)
+   ========================= */
+
+function applyTheme(theme) {
+  const t = theme === "dark" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", t);
+
+  const btn = document.getElementById("themeToggle");
+  if (!btn) return;
+
+  const icon = btn.querySelector(".toggleIcon");
+  const text = btn.querySelector(".toggleText");
+  const isDark = t === "dark";
+
+  if (icon) icon.textContent = isDark ? "☀️" : "🌙";
+  if (text) text.textContent = isDark ? "Light" : "Dark";
+}
+
+function getSavedTheme() {
+  const stored = localStorage.getItem(THEME_KEY);
+  if (stored === "dark" || stored === "light") return stored;
+
+  // If nothing saved, default to light
+  return "light";
+}
+
+// Make toggleTheme global so onclick="toggleTheme()" always works
+window.toggleTheme = function toggleTheme() {
   const current = document.documentElement.getAttribute("data-theme") || "light";
   const next = current === "dark" ? "light" : "dark";
   localStorage.setItem(THEME_KEY, next);
   applyTheme(next);
-}
-window.addEventListener("load", () => {
-  const saved = localStorage.getItem(THEME_KEY) || "light";
-  applyTheme(saved);
+};
 
-  renderCampusHint();
-  renderChatHistory();
+// Initialize theme ASAP after DOM ready
+window.addEventListener("DOMContentLoaded", () => {
+  applyTheme(getSavedTheme());
 });
 
-function clearInput() {
-  document.getElementById("inputBox").value = "";
-}
+/* =========================
+   PAGE-SAFE BOOTSTRAP
+   ========================= */
 
-/* ---------------- Campus helpers ---------------- */
+window.addEventListener("load", () => {
+  // If index.html has these, run them; if not, do nothing.
+  if (document.getElementById("campusSelect")) {
+    renderCampusHint();
+  }
+  if (document.getElementById("history")) {
+    renderChatHistory();
+  }
+});
+
+/* =========================
+   INPUT HELPERS
+   ========================= */
+
+window.clearInput = function clearInput() {
+  const input = document.getElementById("inputBox");
+  if (input) input.value = "";
+};
+
+/* =========================
+   CAMPUS HELPERS (index page only)
+   ========================= */
+
+let customCampusName = "";
 
 function getSelectedCampusKey() {
   const el = document.getElementById("campusSelect");
   return el ? el.value : "";
 }
 
-function renderCampusHint() {
-  const key = getSelectedCampusKey();
+// Make it global because index.html calls it from oninput=""
+window.handleCampusSearch = function handleCampusSearch() {
+  const input = document.getElementById("campusSearch");
+  const val = (input?.value || "").trim();
+  customCampusName = val;
+
+  // If typing a custom school, clear dropdown
+  const select = document.getElementById("campusSelect");
+  if (select && val.length > 0) select.value = "";
+
+  renderCampusHint();
+};
+
+// Make it global because index.html calls it from onchange=""
+window.renderCampusHint = function renderCampusHint() {
   const hintEl = document.getElementById("campusHint");
   if (!hintEl) return;
 
-  if (!key) {
-    hintEl.textContent = "Tip: selecting a campus shows on-campus offices first.";
+  const campusKey = getSelectedCampusKey();
+  const dir = getCampusDirectory();
+
+  if (campusKey && dir?.[campusKey]) {
+    hintEl.textContent = `Showing on-campus options for ${dir[campusKey].displayName}.`;
     return;
   }
 
-  const campus = CAMPUS_DIRECTORY?.[key];
-  hintEl.textContent = campus
-    ? `Showing on-campus options for ${campus.displayName}.`
-    : "Campus selected.";
-}
+  if (customCampusName) {
+    hintEl.textContent = `Using “${customCampusName}” to tailor off-campus searches.`;
+    return;
+  }
+
+  hintEl.textContent = "Tip: selecting a campus shows on-campus offices first.";
+};
 
 function buildCampusRecommendations(campusKey, categories) {
-  if (!campusKey) return [];
-  const campus = CAMPUS_DIRECTORY?.[campusKey];
-  if (!campus || !Array.isArray(campus.resources)) return [];
+  const dir = getCampusDirectory();
+  if (!campusKey || !dir?.[campusKey]) return [];
+
+  const campus = dir[campusKey];
+  if (!Array.isArray(campus.resources)) return [];
 
   const hits = campus.resources.filter((r) =>
     (r.tags || []).some((tag) => categories.includes(tag))
@@ -70,11 +132,14 @@ function buildCampusRecommendations(campusKey, categories) {
   return hits.slice(0, 4);
 }
 
-/* ---------------- Main analyze flow ---------------- */
+/* =========================
+   ANALYZE (index page only)
+   ========================= */
 
-function analyze() {
+window.analyze = function analyze() {
   const inputEl = document.getElementById("inputBox");
   const outputEl = document.getElementById("output");
+  if (!inputEl || !outputEl) return; // safe on emergency.html
 
   const text = (inputEl.value || "").trim();
   if (!text) {
@@ -97,18 +162,20 @@ function analyze() {
 
   getLocation()
     .then((loc) => {
-      renderResults(outputEl, text, recs, campusRecs, campusKey, loc);
-      saveChat(text, categories, recs, campusKey);
+      renderResults(outputEl, text, recs, campusRecs, campusKey, loc, false);
+      saveChat(text, categories, recs, campusKey, customCampusName);
       renderChatHistory();
     })
     .catch(() => {
-      renderResults(outputEl, text, recs, campusRecs, campusKey, null);
-      saveChat(text, categories, recs, campusKey);
+      renderResults(outputEl, text, recs, campusRecs, campusKey, null, false);
+      saveChat(text, categories, recs, campusKey, customCampusName);
       renderChatHistory();
     });
-}
+};
 
-/* ---------------- Chat storage ---------------- */
+/* =========================
+   CHAT STORAGE (index page only)
+   ========================= */
 
 function loadChats() {
   try {
@@ -122,10 +189,9 @@ function saveChats(chats) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
 }
 
-function saveChat(userText, categories, recs, campusKey) {
+function saveChat(userText, categories, recs, campusKey, customName) {
   const chats = loadChats();
   const now = new Date();
-
   const summary = recs?.[0]?.title ? recs[0].title : "Support recommendations";
 
   chats.unshift({
@@ -135,6 +201,7 @@ function saveChat(userText, categories, recs, campusKey) {
     categories,
     summary,
     campusKey: campusKey || "",
+    customCampusName: customName || "",
     recs: recs || []
   });
 
@@ -142,46 +209,59 @@ function saveChat(userText, categories, recs, campusKey) {
   saveChats(chats);
 }
 
-function openChat(chatId) {
+// Make openChat global (onclick in rendered HTML)
+window.openChat = function openChat(chatId) {
   const chats = loadChats();
   const chat = chats.find((c) => c.id === chatId);
   if (!chat) return;
 
-  // restore campus selection
+  // Restore campus selection and custom campus search
   const campusSelect = document.getElementById("campusSelect");
-  if (campusSelect) {
-    campusSelect.value = chat.campusKey || "";
-    renderCampusHint();
-  }
+  if (campusSelect) campusSelect.value = chat.campusKey || "";
 
-  // restore input
+  const campusSearch = document.getElementById("campusSearch");
+  customCampusName = chat.customCampusName || "";
+  if (campusSearch) campusSearch.value = customCampusName;
+
+  renderCampusHint();
+
+  // Restore input
   const inputEl = document.getElementById("inputBox");
   if (inputEl) inputEl.value = chat.userText || "";
 
   const outputEl = document.getElementById("output");
+  if (!outputEl) return;
+
   const categories = chat.categories || categorize(chat.userText || "");
-  const recs = Array.isArray(chat.recs) && chat.recs.length ? chat.recs : buildRecommendations(categories);
+  const recs = Array.isArray(chat.recs) && chat.recs.length
+    ? chat.recs
+    : buildRecommendations(categories);
+
   const campusRecs = buildCampusRecommendations(chat.campusKey || "", categories);
 
-  // render with fresh location if allowed
   getLocation()
-    .then((loc) => renderResults(outputEl, chat.userText || "", recs, campusRecs, chat.campusKey || "", loc, true))
-    .catch(() => renderResults(outputEl, chat.userText || "", recs, campusRecs, chat.campusKey || "", null, true));
+    .then((loc) =>
+      renderResults(outputEl, chat.userText || "", recs, campusRecs, chat.campusKey || "", loc, true)
+    )
+    .catch(() =>
+      renderResults(outputEl, chat.userText || "", recs, campusRecs, chat.campusKey || "", null, true)
+    );
 
   window.scrollTo({ top: 0, behavior: "smooth" });
-}
+};
 
-function renderChatHistory() {
+window.renderChatHistory = function renderChatHistory() {
   const historyEl = document.getElementById("history");
   if (!historyEl) return;
 
   const q = (document.getElementById("searchBox")?.value || "").trim().toLowerCase();
   const chats = loadChats();
+  const dir = getCampusDirectory();
 
   const filtered = chats.filter((c) => {
-    const campusName = c.campusKey && CAMPUS_DIRECTORY?.[c.campusKey]
-      ? CAMPUS_DIRECTORY[c.campusKey].displayName
-      : "";
+    const campusName = c.campusKey && dir?.[c.campusKey]
+      ? dir[c.campusKey].displayName
+      : (c.customCampusName || "");
 
     const blob = `${c.userText} ${c.summary} ${(c.categories || []).join(" ")} ${campusName}`.toLowerCase();
     return !q || blob.includes(q);
@@ -196,9 +276,10 @@ function renderChatHistory() {
     .map((c) => {
       const dt = new Date(c.createdAt);
 
-      const campusLabel = c.campusKey && CAMPUS_DIRECTORY?.[c.campusKey]
-        ? ` • ${CAMPUS_DIRECTORY[c.campusKey].displayName}`
-        : "";
+      const campusLabel =
+        (c.campusKey && dir?.[c.campusKey])
+          ? ` • ${dir[c.campusKey].displayName}`
+          : (c.customCampusName ? ` • ${c.customCampusName}` : "");
 
       return `
         <div class="chatItem chatClickable" onclick="openChat('${escapeAttr(c.id)}')">
@@ -214,7 +295,24 @@ function renderChatHistory() {
       `;
     })
     .join("");
-}
+};
+
+window.deleteAllChats = function deleteAllChats() {
+  if (!confirm("Delete all saved chats from this browser?")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  renderChatHistory();
+};
+
+window.exportChats = function exportChats() {
+  const chats = loadChats();
+  const blob = new Blob([JSON.stringify(chats, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "compass_chats.json";
+  a.click();
+  URL.revokeObjectURL(url);
+};
 
 function prettyTag(key) {
   const map = {
@@ -229,26 +327,9 @@ function prettyTag(key) {
   return map[key] || key;
 }
 
-function deleteAllChats() {
-  if (!confirm("Delete all saved chats from this browser?")) return;
-  localStorage.removeItem(STORAGE_KEY);
-  renderChatHistory();
-}
-
-function exportChats() {
-  const chats = loadChats();
-  const blob = new Blob([JSON.stringify(chats, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "compass_chats.json";
-  a.click();
-
-  URL.revokeObjectURL(url);
-}
-
-/* ---------------- Matching logic ---------------- */
+/* =========================
+   MATCHING LOGIC
+   ========================= */
 
 function categorize(text) {
   const t = text.toLowerCase();
@@ -358,7 +439,9 @@ function buildRecommendations(categories) {
   return ordered.map((k) => library[k]).filter(Boolean).slice(0, 4);
 }
 
-/* ---------------- Location + rendering ---------------- */
+/* =========================
+   LOCATION + RENDERING
+   ========================= */
 
 function getLocation() {
   return new Promise((resolve, reject) => {
@@ -372,27 +455,38 @@ function getLocation() {
 }
 
 function renderResults(outputEl, userText, recs, campusRecs, campusKey, loc, isReopen = false) {
-  const campus = campusKey && CAMPUS_DIRECTORY?.[campusKey] ? CAMPUS_DIRECTORY[campusKey] : null;
+  const dir = getCampusDirectory();
+  const campus = campusKey && dir?.[campusKey] ? dir[campusKey] : null;
+  const campusLabel = campus ? campus.displayName : (customCampusName || "");
 
   const campusSection = (campusRecs && campusRecs.length > 0)
     ? `
       <div class="card">
         <h3>On-campus options${campus ? ` — ${escapeHtml(campus.displayName)}` : ""}</h3>
         <ul class="steps">
-          ${campusRecs.map(r => `
-            <li>
-              <strong>${escapeHtml(r.name)}</strong> — ${escapeHtml(r.type || "Campus resource")}
-              ${r.notes ? `<div class="muted">${escapeHtml(r.notes)}</div>` : ""}
-              ${r.url ? `<div style="margin-top:6px;"><a class="link" href="${r.url}" target="_blank" rel="noopener noreferrer">Open site</a></div>` : ""}
-            </li>
-          `).join("")}
+          ${campusRecs.map(r => {
+            const links = Array.isArray(r.links) ? r.links : (r.url ? [{ label: "Open site", url: r.url }] : []);
+            return `
+              <li>
+                <strong>${escapeHtml(r.name)}</strong> — ${escapeHtml(r.type || "Campus resource")}
+                ${r.notes ? `<div class="muted">${escapeHtml(r.notes)}</div>` : ""}
+                ${links.length ? `
+                  <div style="margin-top:6px; display:flex; gap:10px; flex-wrap:wrap;">
+                    ${links.map(l => `
+                      <a class="link" href="${l.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.label)}</a>
+                    `).join("")}
+                  </div>
+                ` : ""}
+              </li>
+            `;
+          }).join("")}
         </ul>
       </div>
     `
     : "";
 
   const offCampusCards = recs.map((r) => {
-    const mapsLink = buildMapsLink(r.searchQuery, loc);
+    const mapsLink = buildMapsLink(r.searchQuery, loc, campusLabel);
     return `
       <div class="card">
         <h3>${escapeHtml(r.title)}</h3>
@@ -415,7 +509,7 @@ function renderResults(outputEl, userText, recs, campusRecs, campusKey, loc, isR
 
     <div class="chatItem" style="margin-top:12px;">
       <div class="meta">
-        <span>${isReopen ? "Reopened chat" : "Your message"}${campus ? ` • ${escapeHtml(campus.displayName)}` : ""}</span>
+        <span>${isReopen ? "Reopened chat" : "Your message"}${campusLabel ? ` • ${escapeHtml(campusLabel)}` : ""}</span>
         <span>${isReopen ? "From saved history" : "Saved to history"}</span>
       </div>
       <p style="margin:10px 0 0 0;">“${escapeHtml(userText)}”</p>
@@ -432,22 +526,23 @@ function renderResults(outputEl, userText, recs, campusRecs, campusKey, loc, isR
   `;
 }
 
-function buildMapsLink(query, loc) {
-  const q = encodeURIComponent(query + " near me");
-  if (loc) {
-    return `https://www.google.com/maps/search/?api=1&query=${q}&center=${loc.lat},${loc.lon}`;
-  }
+function buildMapsLink(query, loc, campusLabel) {
+  const extra = campusLabel ? ` ${campusLabel}` : "";
+  const q = encodeURIComponent(`${query}${extra} near me`);
+
+  if (loc) return `https://www.google.com/maps/search/?api=1&query=${q}&center=${loc.lat},${loc.lon}`;
   return `https://www.google.com/maps/search/?api=1&query=${q}`;
 }
 
-/* ---------------- Utils ---------------- */
+/* =========================
+   UTILS
+   ========================= */
 
 function hasAny(text, keywords) {
   return keywords.some((k) => text.includes(k));
 }
 
 function escapeAttr(str) {
-  // for putting ids inside onclick="..."
   return String(str).replaceAll("'", "\\'");
 }
 
