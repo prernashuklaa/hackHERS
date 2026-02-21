@@ -59,7 +59,17 @@
         />
 
         <p id="campusHint" class="muted" style="margin-top:8px;"></p>
+        
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input
+            id="campusSearch"
+            class="searchBox campusSearch"
+            placeholder="Search your school"
+          />
+          <button class="smallBtn" onclick="searchCampus()">Search</button>
+        </div>
 
+        <p id="campusSearchError" class="muted" style="margin-top:6px; color:#b00020;"></p>
         <textarea id="inputBox" placeholder="What’s going on?"></textarea>
 
         <div class="row">
