@@ -110,28 +110,22 @@ window.renderCampusHint = function renderCampusHint() {
 ========================= */
 function buildCampusRecommendations(campusKey, text) {
   const dir = getCampusDirectory();
-  let resources = [];
-
   if (campusKey && dir[campusKey]) {
-    resources = dir[campusKey].resources || [];
-  } else {
-    // NEW: If no campus selected, include resources from all campuses
-    resources = Object.values(dir).flatMap(c => c.resources || []);
+    const campus = dir[campusKey];
+    if (!Array.isArray(campus.resources)) return [];
+    return campus.resources.slice();
   }
 
-  // OPTIONAL: filter by text keywords (e.g., show relevant resources)
-  if (text) {
-    const words = text.toLowerCase().split(/\W+/);
-    resources = resources.filter(r => 
-      (r.tags || []).some(tag => words.includes(tag.toLowerCase()))
-    );
-    // If none matched, return all resources anyway
-    if (resources.length === 0) {
-      resources = Object.values(dir).flatMap(c => c.resources || []);
+  // If no campus selected, return any social_support resources from all campuses
+  let allResources = [];
+  Object.values(dir).forEach(campus => {
+    if (Array.isArray(campus.resources)) {
+      allResources = allResources.concat(
+        campus.resources.filter(r => (r.tags || []).includes("social_support"))
+      );
     }
-  }
-
-  return resources;
+  });
+  return allResources.slice(0, 3); // show up to 3 options
 }
 
 /* =========================
