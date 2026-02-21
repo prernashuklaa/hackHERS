@@ -47,6 +47,13 @@
           <option value="rutgers_nk">Rutgers — Newark</option>
           <option value="nyu">NYU</option>
         </select>
+        <input
+        id="campusSearch"
+        class="searchBox"
+        style="margin-top:8px;"
+        placeholder="Or type a school name (adds it to searches)"
+        oninput="handleCampusSearch()"
+      />
 
         
         <p id="campusHint" class="muted" style="margin-top:8px;"></p>
@@ -71,14 +78,7 @@
           placeholder="Search chats (ex: anxiety, tutoring, money)…"
           oninput="renderChatHistory()"
         />
-      <input
-        id="campusSearch"
-        class="searchBox"
-        style="margin-top:8px;"
-        placeholder="Or type a school name (adds it to searches)"
-        oninput="handleCampusSearch()"
-      />
-
+      
         <p class="muted" style="margin-top:10px;">
           Click a chat to reopen the recommendations.
         </p>
