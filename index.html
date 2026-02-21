@@ -5,14 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Compass</title>
 
-  <link rel="stylesheet" href="style.css">
-
-  <!-- Fonts: DM Serif + Inter. Recoleta is loaded locally via CSS @font-face if you add the file -->
+  <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
+
 <body>
   <div class="container">
-
     <div class="header">
       <div class="brand">
         <h1 class="logo">
@@ -59,8 +57,7 @@
         />
 
         <p id="campusHint" class="muted" style="margin-top:8px;"></p>
-        
-        
+
         <textarea id="inputBox" placeholder="What’s going on?"></textarea>
 
         <div class="row">
@@ -74,6 +71,7 @@
       <!-- RIGHT: Saved chats -->
       <div class="panel panel-side">
         <h2>Saved chats</h2>
+
         <input
           id="searchBox"
           class="searchBox"
@@ -95,11 +93,7 @@
     </div>
   </div>
 
-  <script src="campuses.js"></script>
-  <script src="script.js"></script>
-</body>
-</html>
-
+  <!-- Scripts at bottom so the DOM exists -->
   <script src="campuses.js"></script>
   <script src="script.js"></script>
 </body>
