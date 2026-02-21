@@ -63,7 +63,10 @@ window.toggleTheme = function toggleTheme() {
 // Keyword → Tag mapping
 // ============================
 const KEYWORD_TAG_MAP = {
-  // Social support
+
+  // =====================================================
+  // SOCIAL SUPPORT  (YOUR ORIGINAL KEPT)
+  // =====================================================
   lonely: "social_support",
   alone: "social_support",
   friends: "social_support",
@@ -73,11 +76,43 @@ const KEYWORD_TAG_MAP = {
   breakup: "social_support",
   harassed: "social_support",
 
-  // Safety / urgent
+  // Expanded social
+  no friends: "social_support",
+  homesick: "social_support",
+  friend: "social_support",
+  fighting with roommate: "social_support",
+  roommate conflict: "social_support",
+  toxic relationship: "social_support",
+  drama: "social_support",
+  conflict: "social_support",
+  argument: "social_support",
+  community: "social_support",
+  club: "social_support",
+  clubs: "social_support",
+
+  // =====================================================
+  // SAFETY / URGENT  (YOUR ORIGINAL KEPT)
+  // =====================================================
   unsafe: "crisis",
   assaulted: "crisis",
 
-  // Mental health
+  // Expanded crisis
+  assault: "crisis",
+  sexual assault: "crisis",
+  rape: "crisis",
+  domestic violence: "crisis",
+  abuse: "crisis",
+  abusive: "crisis",
+  threatened: "crisis",
+  threat: "crisis",
+  stalking: "crisis",
+  stalker: "crisis",
+  in danger: "crisis",
+  emergency: "crisis",
+
+  // =====================================================
+  // MENTAL HEALTH  (YOUR ORIGINAL KEPT)
+  // =====================================================
   drained: "mental_health",
   anxious: "mental_health",
   anxiety: "mental_health",
@@ -93,7 +128,34 @@ const KEYWORD_TAG_MAP = {
   hopeless: "mental_health",
   counseling: "mental_health",
 
-  // Financial
+  // Expanded mental health
+  panic attack: "mental_health",
+  can't sleep: "mental_health",
+  cant sleep: "mental_health",
+  insomnia: "mental_health",
+  nightmares: "mental_health",
+  exhausted: "mental_health",
+  tired all the time: "mental_health",
+  crying: "mental_health",
+  grief: "mental_health",
+  trauma: "mental_health",
+  ptsd: "mental_health",
+  adhd: "mental_health",
+  add: "mental_health",
+  ocd: "mental_health",
+  bipolar: "mental_health",
+  mood swings: "mental_health",
+  self esteem: "mental_health",
+  low confidence: "mental_health",
+  imposter syndrome: "mental_health",
+  overthinking: "mental_health",
+  can't focus: "mental_health",
+  cant focus: "mental_health",
+  concentration: "mental_health",
+
+  // =====================================================
+  // FINANCIAL  (YOUR ORIGINAL KEPT)
+  // =====================================================
   money: "financial_support",
   rent: "financial_support",
   bills: "financial_support",
@@ -105,30 +167,129 @@ const KEYWORD_TAG_MAP = {
   finance: "financial_support",
   financial: "financial_support",
 
-  // Crisis / suicidal
+  // Expanded financial
+  broke: "financial_support",
+  can't afford: "financial_support",
+  cant afford: "financial_support",
+  loan: "financial_support",
+  student loan: "financial_support",
+  credit card: "financial_support",
+  overdraft: "financial_support",
+  scholarship: "financial_support",
+  grant: "financial_support",
+  fafsa: "financial_support",
+  late fee: "financial_support",
+  budget: "financial_support",
+  housing payment: "financial_support",
+
+  // =====================================================
+  // CRISIS / SUICIDAL  (YOUR ORIGINAL KEPT)
+  // =====================================================
   suicidal: "crisis",
   "self harm": "crisis",
   "self-harm": "crisis",
   "kill myself": "crisis",
+
+  // Expanded suicidal language
+  want to die: "crisis",
+  don't want to live: "crisis",
+  dont want to live: "crisis",
+  end my life: "crisis",
+  hurt myself: "crisis",
+  harming myself: "crisis",
+
+  // =====================================================
+  // ACADEMIC SUPPORT (NEW SECTION)
+  // =====================================================
+  failing: "academic_support",
+  fail: "academic_support",
+  bad grades: "academic_support",
+  gpa: "academic_support",
+  exam: "academic_support",
+  test: "academic_support",
+  midterm: "academic_support",
+  final: "academic_support",
+  homework: "academic_support",
+  assignment: "academic_support",
+  studying: "academic_support",
+  study: "academic_support",
+  procrastinating: "academic_support",
+  procrastination: "academic_support",
+  time management: "academic_support",
+  tutor: "academic_support",
+  tutoring: "academic_support",
+  writing help: "academic_support",
+  math help: "academic_support",
+  office hours: "academic_support",
+  academic advisor: "academic_support",
+  advising: "academic_support",
+  registration: "academic_support",
+  withdraw: "academic_support",
+  drop a class: "academic_support",
+
+  // =====================================================
+  // HEALTH / MEDICAL
+  // =====================================================
+  sick: "health_support",
+  illness: "health_support",
+  doctor: "health_support",
+  clinic: "health_support",
+  urgent care: "health_support",
+  medical: "health_support",
+  injury: "health_support",
+  hurt: "health_support",
+  prescription: "health_support",
+  medication: "health_support",
+
+  // =====================================================
+  // HOUSING
+  // =====================================================
+  housing: "housing_support",
+  dorm: "housing_support",
+  landlord: "housing_support",
+  eviction: "housing_support",
+  lease: "housing_support",
+  homeless: "housing_support",
+  moving: "housing_support",
+
+  // =====================================================
+  // CAREER
+  // =====================================================
+  internship: "career_support",
+  resume: "career_support",
+  interview: "career_support",
+  linkedin: "career_support",
+  networking: "career_support",
+  career fair: "career_support",
+  job search: "career_support",
+
+  // =====================================================
+  // ACCESSIBILITY
+  // =====================================================
+  accommodation: "accessibility_support",
+  accommodations: "accessibility_support",
+  disability: "accessibility_support",
+  extra time: "accessibility_support",
+
+  // =====================================================
+  // INTERNATIONAL
+  // =====================================================
+  visa: "international_support",
+  opt: "international_support",
+  cpt: "international_support",
+  immigration: "international_support",
+  international student: "international_support",
+
+  // =====================================================
+  // SUBSTANCE
+  // =====================================================
+  drinking: "substance_support",
+  alcohol: "substance_support",
+  drugs: "substance_support",
+  addiction: "substance_support",
+  weed: "substance_support",
+
 };
-
-// ============================
-// Tag matching
-// ============================
-function getMatchedTags(text) {
-  const t = (text || "").toLowerCase();
-  const matched = new Set();
-
-  for (const [keyword, tag] of Object.entries(KEYWORD_TAG_MAP)) {
-    if (t.includes(keyword)) matched.add(tag);
-  }
-
-  // Default fallback so you don’t return “nothing”
-  if (matched.size === 0) matched.add("mental_health");
-
-  return matched;
-}
-
 // ============================
 // Campus recommendations
 // ============================
