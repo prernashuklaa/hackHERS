@@ -6,7 +6,10 @@ window.CAMPUS_DIRECTORY = {
       {
         name: "Rutgers Dining Services (locations, menus, hours)",
         type: "Food & Dining",
-        intents: [{ tag: "food_support", sub: "dining" }],
+        intents: [
+          { tag: "food_support", sub: "dining" },
+          { tag: "food_support", sub: "default" }, // wildcard for any food need
+        ],
         notes: "Dining halls, locations, hours, menus.",
         links: [{ label: "Rutgers Dining", url: "https://food.rutgers.edu/" }],
       },
@@ -36,7 +39,10 @@ window.CAMPUS_DIRECTORY = {
       {
         name: "Rutgers Health Services (appointments & info)",
         type: "Health",
-        intents: [{ tag: "health_support", sub: "primary" }],
+        intents: [
+          { tag: "health_support", sub: "primary" },
+          { tag: "health_support", sub: "default" }, // wildcard
+        ],
         notes: "Medical care and student health resources.",
         links: [{ label: "Rutgers Health", url: "https://health.rutgers.edu/" }],
       },
@@ -52,7 +58,10 @@ window.CAMPUS_DIRECTORY = {
       {
         name: "Rutgers Counseling / Mental Health Support",
         type: "Mental Health",
-        intents: [{ tag: "mental_health", sub: "therapy" }],
+        intents: [
+          { tag: "mental_health", sub: "therapy" },
+          { tag: "mental_health", sub: "default" }, // wildcard
+        ],
         notes: "Counseling and wellness support.",
         links: [{ label: "Rutgers Counseling", url: "https://health.rutgers.edu/counseling-services" }],
       },
@@ -77,7 +86,10 @@ window.CAMPUS_DIRECTORY = {
       {
         name: "Rutgers Get Involved (clubs, orgs, activities)",
         type: "Community",
-        intents: [{ tag: "community_support", sub: "clubs" }],
+        intents: [
+          { tag: "community_support", sub: "clubs" },
+          { tag: "community_support", sub: "default" }, // wildcard
+        ],
         notes: "Find clubs and student orgs.",
         links: [{ label: "Get Involved", url: "https://getinvolved.rutgers.edu/" }],
       },
@@ -103,6 +115,7 @@ window.CAMPUS_DIRECTORY = {
         intents: [
           { tag: "transport_support", sub: "bus" },
           { tag: "transport_support", sub: "shuttle" },
+          { tag: "transport_support", sub: "default" }, // wildcard
         ],
         notes: "Routes, schedules, real-time info.",
         links: [{ label: "Rutgers Transportation", url: "https://ipo.rutgers.edu/dots/buses-shuttle" }],
@@ -112,7 +125,10 @@ window.CAMPUS_DIRECTORY = {
       {
         name: "Rutgers Financial Aid",
         type: "Financial Support",
-        intents: [{ tag: "financial_support", sub: "aid" }],
+        intents: [
+          { tag: "financial_support", sub: "aid" },
+          { tag: "financial_support", sub: "default" }, // wildcard
+        ],
         notes: "Aid, loans, billing guidance.",
         links: [{ label: "Financial Aid", url: "https://financialaid.rutgers.edu/" }],
       },
@@ -130,7 +146,10 @@ window.CAMPUS_DIRECTORY = {
       {
         name: "Rutgers Residence Life / Housing",
         type: "Housing Support",
-        intents: [{ tag: "housing_support", sub: "dorm" }],
+        intents: [
+          { tag: "housing_support", sub: "dorm" },
+          { tag: "housing_support", sub: "default" }, // wildcard
+        ],
         notes: "Dorm + housing information.",
         links: [{ label: "Residence Life", url: "https://ruoncampus.rutgers.edu/" }],
       },
@@ -142,9 +161,12 @@ window.CAMPUS_DIRECTORY = {
     resources: [
       // ---------- Food ----------
       {
-        name: "Rutgers Newark Dining info (campus life resources)",
+        name: "Rutgers Newark Student Life (dining + resources hub)",
         type: "Food & Dining",
-        intents: [{ tag: "food_support", sub: "dining" }],
+        intents: [
+          { tag: "food_support", sub: "dining" },
+          { tag: "food_support", sub: "default" }, // wildcard
+        ],
         notes: "Campus info hub for student life resources (including dining pointers).",
         links: [{ label: "RU Newark Student Life", url: "https://www.newark.rutgers.edu/student-life" }],
       },
@@ -165,9 +187,12 @@ window.CAMPUS_DIRECTORY = {
 
       // ---------- Health ----------
       {
-        name: "Rutgers Newark health resources (campus info hub)",
+        name: "Rutgers Newark Student Life (health + support hub)",
         type: "Health",
-        intents: [{ tag: "health_support", sub: "primary" }],
+        intents: [
+          { tag: "health_support", sub: "primary" },
+          { tag: "health_support", sub: "default" }, // wildcard
+        ],
         notes: "Student life hub for support services and health-related resources.",
         links: [{ label: "RU Newark Student Life", url: "https://www.newark.rutgers.edu/student-life" }],
       },
@@ -183,7 +208,10 @@ window.CAMPUS_DIRECTORY = {
       {
         name: "Rutgers Newark Counseling Center",
         type: "Mental Health",
-        intents: [{ tag: "mental_health", sub: "therapy" }],
+        intents: [
+          { tag: "mental_health", sub: "therapy" },
+          { tag: "mental_health", sub: "default" }, // wildcard
+        ],
         notes: "Counseling and mental health support.",
         links: [{ label: "Newark Counseling Center", url: "https://www.newark.rutgers.edu/student-life/counseling-center" }],
       },
@@ -192,7 +220,9 @@ window.CAMPUS_DIRECTORY = {
       {
         name: "Academic Support (Newark campus info hub)",
         type: "Academic Support",
-        intents: [{ tag: "academic_support", sub: "default" }],
+        intents: [
+          { tag: "academic_support", sub: "default" }, // wildcard for academic
+        ],
         notes: "Academic success support resources.",
         links: [{ label: "RU Newark Student Life", url: "https://www.newark.rutgers.edu/student-life" }],
       },
@@ -208,7 +238,10 @@ window.CAMPUS_DIRECTORY = {
       {
         name: "Clubs / Student orgs (Newark info hub)",
         type: "Community",
-        intents: [{ tag: "community_support", sub: "clubs" }],
+        intents: [
+          { tag: "community_support", sub: "clubs" },
+          { tag: "community_support", sub: "default" }, // wildcard
+        ],
         notes: "Find activities and student involvement resources.",
         links: [{ label: "RU Newark Student Life", url: "https://www.newark.rutgers.edu/student-life" }],
       },
@@ -228,6 +261,7 @@ window.CAMPUS_DIRECTORY = {
           { tag: "transport_support", sub: "bus" },
           { tag: "transport_support", sub: "train" },
           { tag: "transport_support", sub: "parking" },
+          { tag: "transport_support", sub: "default" }, // wildcard
         ],
         notes: "Transit + parking info for Newark campus.",
         links: [{ label: "Rutgers Newark", url: "https://www.newark.rutgers.edu/" }],
@@ -237,7 +271,10 @@ window.CAMPUS_DIRECTORY = {
       {
         name: "Financial Aid Office — Newark",
         type: "Financial Support",
-        intents: [{ tag: "financial_support", sub: "aid" }],
+        intents: [
+          { tag: "financial_support", sub: "aid" },
+          { tag: "financial_support", sub: "default" }, // wildcard
+        ],
         notes: "Help with tuition, billing, and aid.",
         links: [{ label: "Newark Financial Aid", url: "https://www.newark.rutgers.edu/financial-aid" }],
       },
@@ -250,7 +287,10 @@ window.CAMPUS_DIRECTORY = {
       {
         name: "NYU Dining",
         type: "Food & Dining",
-        intents: [{ tag: "food_support", sub: "dining" }],
+        intents: [
+          { tag: "food_support", sub: "dining" },
+          { tag: "food_support", sub: "default" },
+        ],
         notes: "Dining locations and meal plan info.",
         links: [{ label: "NYU Dining", url: "https://www.nyu.edu/students/student-information-and-resources/housing-and-dining/dining.html" }],
       },
@@ -264,7 +304,10 @@ window.CAMPUS_DIRECTORY = {
       {
         name: "NYU Wellness Center",
         type: "Mental Health",
-        intents: [{ tag: "mental_health", sub: "therapy" }],
+        intents: [
+          { tag: "mental_health", sub: "therapy" },
+          { tag: "mental_health", sub: "default" },
+        ],
         notes: "Wellness resources and support.",
         links: [{ label: "NYU Wellness", url: "https://www.nyu.edu/students/wellness.html" }],
       },
@@ -285,7 +328,10 @@ window.CAMPUS_DIRECTORY = {
       {
         name: "NYU Financial Aid",
         type: "Financial Support",
-        intents: [{ tag: "financial_support", sub: "aid" }],
+        intents: [
+          { tag: "financial_support", sub: "aid" },
+          { tag: "financial_support", sub: "default" },
+        ],
         notes: "Aid, loans, and financial guidance.",
         links: [{ label: "NYU Financial Aid", url: "https://www.nyu.edu/admissions/financial-aid-and-scholarships.html" }],
       },
