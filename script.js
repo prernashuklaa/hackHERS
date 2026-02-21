@@ -21,14 +21,16 @@ function escapeHtml(str) {
 function buildCampusRecommendations(campusKey, text) {
   const dir = getCampusDirectory();
   let campusRecs = [];
-  const words = (text || "").toLowerCase().split(/\W+/);
+  const t = (text || "").toLowerCase();
 
-  // Map input words to resource tags
+  // Map input keywords to resource tags
   const KEYWORD_TAG_MAP = {
+    // Social support
     "lonely": "social_support",
-    "drained": "social_support",
     "alone": "social_support",
     "friends": "social_support",
+    // Mental health
+    "drained": "mental_health",
     "anxious": "mental_health",
     "anxiety": "mental_health",
     "depressed": "mental_health",
@@ -37,16 +39,34 @@ function buildCampusRecommendations(campusKey, text) {
     "therapy": "mental_health",
     "overwhelmed": "mental_health",
     "panic": "mental_health",
-    "burnout": "mental_health"
+    "burnout": "mental_health",
+    // Financial
+    "money": "financial_support",
+    "rent": "financial_support",
+    "bills": "financial_support",
+    "tuition": "financial_support",
+    "food": "financial_support",
+    "groceries": "financial_support",
+    "job": "financial_support",
+    "debt": "financial_support",
+    // Crisis / suicidal
+    "suicidal": "crisis",
+    "self harm": "crisis",
+    "self-harm": "crisis",
+    "kill myself": "crisis"
   };
 
-  const matchedTags = words.map(w => KEYWORD_TAG_MAP[w]).filter(Boolean);
+  // Determine which tags appear in user input
+  const matchedTags = new Set();
+  for (const [keyword, tag] of Object.entries(KEYWORD_TAG_MAP)) {
+    if (t.includes(keyword)) matchedTags.add(tag);
+  }
 
   if (campusKey && dir[campusKey]) {
     const campus = dir[campusKey];
 
-    // Add the group offering under Rutgers NB mental health
-    if (campusKey === "rutgers_nb") {
+    // Add Mental Health group offerings for Rutgers NB
+    if (campusKey === "rutgers_nb" && !campus.resources.some(r => r.name === "Group Offerings")) {
       campus.resources.push({
         name: "Group Offerings",
         type: "Mental Health / Therapy",
@@ -58,17 +78,45 @@ function buildCampusRecommendations(campusKey, text) {
       });
     }
 
+    // Add Financial Aid link
+    if (campusKey === "rutgers_nb" && !campus.resources.some(r => r.name === "Financial Aid Office")) {
+      campus.resources.push({
+        name: "Financial Aid Office",
+        type: "Financial Support",
+        tags: ["financial_support"],
+        notes: "Assistance with tuition, bills, and other financial concerns",
+        links: [
+          { label: "Visit Financial Aid", url: "https://financialaid.rutgers.edu/" }
+        ]
+      });
+    }
+
+    // Add Crisis / Suicide resources
+    if (campusKey === "rutgers_nb" && !campus.resources.some(r => r.name === "Crisis Hotline")) {
+      campus.resources.push({
+        name: "Crisis Hotline",
+        type: "Crisis Support",
+        tags: ["crisis"],
+        notes: "24/7 support for urgent mental health needs",
+        links: [
+          { label: "Call 988 (US)", url: "tel:988" },
+          { label: "Learn more", url: "https://988lifeline.org/" }
+        ]
+      });
+    }
+
+    // Filter campus resources based on matched tags
     if (Array.isArray(campus.resources)) {
       campusRecs = campus.resources.filter(r =>
-        r.tags.some(tag => matchedTags.includes(tag))
+        (r.tags || []).some(tag => matchedTags.has(tag))
       );
     }
   } else {
-    // No campus selected → show general matching resources
+    // No campus selected → search all campuses for matching tags
     Object.values(dir).forEach(campus => {
       if (Array.isArray(campus.resources)) {
         campus.resources.forEach(r => {
-          if ((r.tags || []).some(tag => matchedTags.includes(tag))) campusRecs.push(r);
+          if ((r.tags || []).some(tag => matchedTags.has(tag))) campusRecs.push(r);
         });
       }
     });
