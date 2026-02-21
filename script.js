@@ -110,9 +110,12 @@ window.renderCampusHint = function renderCampusHint() {
 ========================= */
 function buildCampusRecommendations(campusKey, text) {
   const dir = getCampusDirectory();
+
   if (campusKey && dir[campusKey]) {
     const campus = dir[campusKey];
     if (!Array.isArray(campus.resources)) return [];
+
+    // Return all resources for the selected campus
     return campus.resources.slice();
   }
 
@@ -178,7 +181,7 @@ function categorize(text) {
   if (hasAny(t, ["focus","distract","distraction","procrast","motivation","can't start","cant start","stuck","doomscroll","tiktok","instagram","social media","phone"])) categories.push("focus_support");
   if (hasAny(t, ["grade","grades","class","classes","exam","midterm","final","assignment","deadline","homework","study","studying","falling behind","behind","gpa"])) categories.push("academic_support");
   if (hasAny(t, ["money","rent","tuition","bills","financial","food","hungry","groceries","job","debt"])) categories.push("financial_support");
-  if (hasAny(t, ["alone","lonely","isolated","friends","roommate","relationship","breakup","unsafe","harassed","harassment"])) categories.push("social_support"); // "lonely" included
+  if (hasAny(t, ["alone","lonely","isolated","friends","roommate","relationship","breakup","unsafe","harassed","harassment"])) categories.push("social_support");
   if (!categories.length) categories.push("general_support");
   return Array.from(new Set(categories));
 }
