@@ -26,8 +26,8 @@ function buildCampusRecommendations(campusKey, text) {
   // Map input words to resource tags
   const KEYWORD_TAG_MAP = {
     "lonely": "social_support",
-    "drained":"social_support",
-    "drained":"mental_health",
+    "drained": "social_support",
+    "drained": "mental_health",
     "alone": "social_support",
     "friends": "social_support",
     "anxious": "mental_health",
