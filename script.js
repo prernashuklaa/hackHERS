@@ -520,27 +520,3 @@ document.addEventListener("DOMContentLoaded", () => {
   initTheme();
   renderChatHistory();
 });
-// ============================
-// Theme toggle (FIX)
-// ============================
-const THEME_KEY = "compass_theme";
-
-function applyTheme(theme) {
-  document.documentElement.setAttribute("data-theme", theme);
-}
-
-function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-  applyTheme(saved || "light");
-}
-
-// Make it GLOBAL so onclick works
-window.toggleTheme = function toggleTheme() {
-  const current = document.documentElement.getAttribute("data-theme") || "light";
-  const next = current === "dark" ? "light" : "dark";
-  localStorage.setItem(THEME_KEY, next);
-  applyTheme(next);
-};
-
-// Run when page loads
-document.addEventListener("DOMContentLoaded", initTheme);
