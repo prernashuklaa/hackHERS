@@ -47,13 +47,15 @@
           <option value="rutgers_nk">Rutgers — Newark</option>
           <option value="nyu">NYU</option>
         </select>
-        <input
-        id="campusSearch"
-        class="searchBox"
-        style="margin-top:8px;"
-        placeholder="Or type a school name (any U.S. university)"
-        oninput="handleCampusSearch()"
-      />
+        
+        <div class="row" style="margin-top:8px;">
+          <input
+            id="campusSearch"
+            class="searchBox"
+            placeholder="Type a school name (e.g. Rutgers, NYU)"
+          />
+          <button class="smallBtn" onclick="confirmCampusSearch()">Search</button>
+        </div>
 
         
         <p id="campusHint" class="muted" style="margin-top:8px;"></p>
