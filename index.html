@@ -1,29 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Compass</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
-
   <div class="container">
 
-    <h1>Compass</h1>
-    <p class="subtitle">
-      Describe what’s going on, and we’ll help you find the right support.
-    </p>
+    <div class="header">
+      <div class="brand">
+        <h1>Compass</h1>
+        <p class="subtitle">Describe what’s going on, and we’ll help you find the right support.</p>
+      </div>
 
-    <textarea 
-      id="inputBox" 
-      placeholder="Example: I'm overwhelmed with classes and feeling really stressed..."
-    ></textarea>
+      <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="emergency.html">Emergency</a>
+      </div>
+    </div>
 
-    <button onclick="analyze()">Get Guidance</button>
+    <div class="grid">
 
-    <div id="output" class="output"></div>
+      <div class="panel">
+        <h2>Get guidance</h2>
+        <p class="muted">Use plain language. Example: “I’m overwhelmed with classes and can’t focus.”</p>
 
+        <textarea id="inputBox" placeholder="What’s going on?"></textarea>
+
+        <div class="row">
+          <button onclick="analyze()">Get Guidance</button>
+          <button class="smallBtn" onclick="clearInput()">Clear</button>
+        </div>
+
+        <div id="output" class="output"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Saved chats</h2>
+        <input
+          id="searchBox"
+          class="searchBox"
+          placeholder="Search chats (ex: anxiety, tutoring, money)…"
+          oninput="renderChatHistory()"
+        />
+        <p class="muted" style="margin-top:10px;">
+          Chats are saved locally in your browser (private to your device).
+        </p>
+
+        <div class="row">
+          <button class="smallBtn" onclick="exportChats()">Export</button>
+          <button class="smallBtn" onclick="deleteAllChats()">Delete all</button>
+        </div>
+
+        <div id="history"></div>
+      </div>
+
+    </div>
   </div>
 
   <script src="script.js"></script>
