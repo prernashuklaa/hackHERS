@@ -403,7 +403,13 @@ button:not(.smallBtn):hover {
 .phoneLink:hover, .link:hover { opacity: 0.85; }
 
 /* Searching- Empty State */
-.no-results {
+#campusHint {
+  display: block; 
+  min-height: 1.2em; 
+  transition: color 0.2s ease;
+}
+
+.no-results-active {
   text-align: center;
   padding: 40px;
   color: var(--muted);
