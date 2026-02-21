@@ -1,6 +1,9 @@
 // script.js
 // Compass - theme + chat logic (safe on every page)
 
+let selectedCampusKey = "";
+let customCampusName = null;
+
 const STORAGE_KEY = "compass_chats_v2";
 const THEME_KEY = "compass_theme_v1";
 
@@ -87,11 +90,33 @@ function getSelectedCampusKey() {
 window.handleCampusSearch = function handleCampusSearch() {
   const input = document.getElementById("campusSearch");
   const val = (input?.value || "").trim();
-  customCampusName = val;
 
-  // If typing a custom school, clear dropdown
   const select = document.getElementById("campusSelect");
-  if (select && val.length > 0) select.value = "";
+  const dir = getCampusDirectory();
+
+  // If search is cleared, reset state
+  if (!val) {
+    customCampusName = "";
+    renderCampusHint();
+    return;
+  }
+
+  const normalized = val.toLowerCase();
+
+  // Try to match a known campus
+  const matchedKey = Object.keys(dir || {}).find((key) =>
+    dir[key].displayName.toLowerCase().includes(normalized)
+  );
+
+  if (matchedKey) {
+    // Found a campus in the directory → switch to dropdown behavior
+    if (select) select.value = matchedKey;
+    customCampusName = "";
+  } else {
+    // Not found → use custom campus name
+    if (select) select.value = "";
+    customCampusName = val;
+  }
 
   renderCampusHint();
 };
@@ -104,17 +129,23 @@ window.renderCampusHint = function renderCampusHint() {
   const campusKey = getSelectedCampusKey();
   const dir = getCampusDirectory();
 
+  // Case 1: dropdown / matched campus
   if (campusKey && dir?.[campusKey]) {
-    hintEl.textContent = `Showing on-campus options for ${dir[campusKey].displayName}.`;
+    hintEl.textContent =
+      `Showing on-campus options for ${dir[campusKey].displayName}.`;
     return;
   }
 
+  // Case 2: custom campus (not in list)
   if (customCampusName) {
-    hintEl.textContent = `Using “${customCampusName}” to tailor off-campus searches.`;
+    hintEl.textContent =
+      `We don’t have campus-specific data for “${customCampusName}”. Showing general student support resources instead.`;
     return;
   }
 
-  hintEl.textContent = "Tip: selecting a campus shows on-campus offices first.";
+  // Case 3: default
+  hintEl.textContent =
+    "Tip: selecting a campus shows on-campus offices first.";
 };
 
 function buildCampusRecommendations(campusKey, categories) {
