@@ -1,128 +1,87 @@
-function getCampusDirectory() {
-  return window.CAMPUS_DIRECTORY || {};
-}
-
-function getSelectedCampusKey() {
-  const el = document.getElementById("campusSelect");
-  return el ? el.value : "";
-}
-
-function escapeHtml(str) {
-  return String(str)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-
-// Map input keywords to resource tags
-const KEYWORD_TAG_MAP = {
-  // Social support
-  "lonely": "social_support",
-  "alone": "social_support",
-  "friends": "social_support",
-  // Mental health
-  "drained": "mental_health",
-  "anxious": "mental_health",
-  "anxiety": "mental_health",
-  "depressed": "mental_health",
-  "stress": "mental_health",
-  "stressed": "mental_health",
-  "therapy": "mental_health",
-  "overwhelmed": "mental_health",
-  "panic": "mental_health",
-  "burnout": "mental_health",
-  // Financial
-  "money": "financial_support",
-  "rent": "financial_support",
-  "bills": "financial_support",
-  "tuition": "financial_support",
-  "food": "financial_support",
-  "groceries": "financial_support",
-  "job": "financial_support",
-  "debt": "financial_support",
-  // Crisis / suicidal
-  "suicidal": "crisis",
-  "self harm": "crisis",
-  "self-harm": "crisis",
-  "kill myself": "crisis"
-};
-
-function buildCampusRecommendations(campusKey, text) {
-  const dir = getCampusDirectory();
-  const t = (text || "").toLowerCase();
-
-  // Determine which tags appear in user input
-  const matchedTags = new Set();
-  for (const [keyword, tag] of Object.entries(KEYWORD_TAG_MAP)) {
-    if (t.includes(keyword)) matchedTags.add(tag);
-  }
-
-  let campusRecs = [];
-
-  if (campusKey && dir[campusKey]) {
-    const campus = dir[campusKey];
-
-    if (Array.isArray(campus.resources)) {
-      campus.resources.forEach(r => {
-        if ((r.tags || []).some(tag => matchedTags.has(tag))) {
-          campusRecs.push(r);
-        }
-      });
-    }
-  } else {
-    // No campus selected → search all campuses
-    Object.values(dir).forEach(campus => {
-      if (Array.isArray(campus.resources)) {
-        campus.resources.forEach(r => {
-          if ((r.tags || []).some(tag => matchedTags.has(tag))) campusRecs.push(r);
-        });
+window.CAMPUS_DIRECTORY = {
+  "rutgers_nb": {
+    displayName: "Rutgers — New Brunswick",
+    resources: [
+      // Mental Health / Therapy
+      {
+        name: "Group Offerings",
+        type: "Mental Health / Therapy",
+        tags: ["mental_health"],
+        notes: "Peer and therapy groups at Rutgers",
+        links: [
+          { label: "View group offerings", url: "https://health.rutgers.edu/counseling-services/therapy-options/group-offerings" }
+        ]
+      },
+      {
+        name: "Counseling Services",
+        type: "Mental Health",
+        tags: ["mental_health"],
+        notes: "Individual counseling available on campus",
+        links: [
+          { label: "Learn more", url: "https://health.rutgers.edu/counseling-services/" }
+        ]
+      },
+      // Financial Support
+      {
+        name: "Financial Aid Office",
+        type: "Financial Support",
+        tags: ["financial_support"],
+        notes: "Assistance with tuition, bills, and other financial concerns",
+        links: [
+          { label: "Visit Financial Aid", url: "https://financialaid.rutgers.edu/" }
+        ]
+      },
+      // Crisis / Suicide
+      {
+        name: "Crisis Hotline",
+        type: "Crisis Support",
+        tags: ["crisis"],
+        notes: "24/7 support for urgent mental health needs",
+        links: [
+          { label: "Call 988 (US)", url: "tel:988" },
+          { label: "Learn more", url: "https://988lifeline.org/" }
+        ]
+      },
+      // Social Support
+      {
+        name: "Peer Support",
+        type: "Social Support",
+        tags: ["social_support"],
+        notes: "Student peer groups and clubs",
+        links: [
+          { label: "Find peer groups", url: "https://rutgers.campuslabs.com/" }
+        ]
       }
-    });
+    ]
+  },
+
+  "rutgers_nk": {
+    displayName: "Rutgers — Newark",
+    resources: [
+      {
+        name: "Newark Counseling Center",
+        type: "Mental Health",
+        tags: ["mental_health"],
+        notes: "Call to schedule an appointment",
+        links: [
+          { label: "Website", url: "https://www.newark.rutgers.edu/student-life/counseling-center" }
+        ]
+      }
+    ]
+  },
+
+  "nyu": {
+    displayName: "New York University",
+    resources: [
+      {
+        name: "NYU Wellness Center",
+        type: "Mental Health",
+        tags: ["mental_health"],
+        notes: "Appointments available online",
+        links: [
+          { label: "Book now", url: "https://www.nyu.edu/students/wellness.html" }
+        ]
+      }
+    ]
   }
-
-  return campusRecs;
-}
-
-window.analyze = function analyze() {
-  const inputEl = document.getElementById("inputBox");
-  const outputEl = document.getElementById("output");
-  if (!inputEl || !outputEl) return;
-
-  const text = (inputEl.value || "").trim();
-  if (!text) {
-    outputEl.innerHTML = `<div class="chatItem"><strong>Please type what’s going on.</strong></div>`;
-    return;
-  }
-
-  const campusKey = getSelectedCampusKey();
-  const campusRecs = buildCampusRecommendations(campusKey, text);
-
-  outputEl.innerHTML = `
-    <div class="chatItem">
-      <strong>Finding the right support…</strong>
-      <p class="muted">Matching your situation to on-campus and nearby resources.</p>
-    </div>
-
-    ${campusRecs.length ? `<div class="card">
-      <h3>Resources${campusKey ? ` — ${escapeHtml(getCampusDirectory()[campusKey].displayName)}` : ""}</h3>
-      <ul class="steps">
-        ${campusRecs.map(r => `
-          <li>
-            <strong>${escapeHtml(r.name)}</strong> — ${escapeHtml(r.type || "Campus resource")}
-            ${r.notes ? `<div class="muted">${escapeHtml(r.notes)}</div>` : ""}
-            ${Array.isArray(r.links) && r.links.length ? `<div style="margin-top:6px; display:flex; gap:10px; flex-wrap:wrap;">
-              ${r.links.map(l => `<a class="link" href="${l.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.label)}</a>`).join("")}
-            </div>` : ""}
-          </li>
-        `).join("")}
-      </ul>
-    </div>` : `<p class="muted">No campus resources found.</p>`}
-  `;
-};
-
-window.clearInput = function clearInput() {
-  const inputEl = document.getElementById("inputBox");
-  if (inputEl) inputEl.value = "";
 };
