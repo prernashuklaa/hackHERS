@@ -1,42 +1,72 @@
 // campuses.js
 // Simple campus directory. Add/edit entries for your campus.
 
+// campuses.js
+
 const CAMPUS_DIRECTORY = {
   rutgers_nb: {
-  displayName: "Rutgers — New Brunswick",
-  resources: [
-    {
-      tags: ["mental_health", "lgbtq", "identity", "lonely", "stress", "stressed", "burntout", "burned_out", "anxious", "anxiety", "depressed", "depression", "alone", "crisis"],
-      name: "CAPS (Counseling, ADAP & Psychiatric Services)",
-      type: "counseling",
-      notes: "Crisis support, individual/group counseling, workshops, psychiatric services, and referrals.",
-      links: [
-        {
-          label: "Counseling Services",
-          url: "https://health.rutgers.edu/counseling-services"
-        },
-        {
-          label: "Mental Health Group Sessions",
-          url: "https://health.rutgers.edu/counseling-services/therapy-options/group-offerings"
-        }
-      ]
-    {
-      tags: ["academic_support", "focus_support"],
-      name: "Rutgers Learning Centers",
-      type: "Academic support",
-      notes: "Peer tutoring, study groups, academic coaching, writing support, and workshops.",
-      url: "https://learningcenters.rutgers.edu/"
-    },
-    {
-      tags: ["financial"],
-      name: "Scarlet Hub — Office of Financial Aid",
-      type: "Financial",
-      notes: "Financial aid guidance, eligibility, awards, and counseling across Rutgers campuses.",
-      url: "https://scarlethub.rutgers.edu/"
-    }
-  ]
-},
+    displayName: "Rutgers — New Brunswick",
+    resources: [
+      {
+        tags: [
+          "mental_health",
+          "lonely",
+          "alone",
+          "anxious",
+          "anxiety",
+          "depressed",
+          "depression",
+          "stress",
+          "burnout",
+          "crisis"
+        ],
+        name: "CAPS (Counseling, ADAP & Psychiatric Services)",
+        type: "Counseling & Mental Health",
+        notes:
+          "Crisis support, individual/group counseling, workshops, psychiatric services, and referrals.",
+        links: [
+          {
+            label: "Counseling Services",
+            url: "https://health.rutgers.edu/counseling-services"
+          },
+          {
+            label: "Group Therapy Options",
+            url:
+              "https://health.rutgers.edu/counseling-services/therapy-options/group-offerings"
+          }
+        ]
+      },
+      {
+        tags: ["academic", "study", "grades", "exam", "focus", "tutoring"],
+        name: "Rutgers Learning Centers",
+        type: "Academic Support",
+        notes:
+          "Peer tutoring, study groups, academic coaching, writing support, and workshops.",
+        links: [
+          {
+            label: "Learning Centers Website",
+            url: "https://learningcenters.rutgers.edu/"
+          }
+        ]
+      },
+      {
+        tags: ["financial", "money", "tuition", "aid", "broke"],
+        name: "Scarlet Hub — Office of Financial Aid",
+        type: "Financial Support",
+        notes:
+          "Financial aid guidance, eligibility, awards, and counseling across Rutgers campuses.",
+        links: [
+          {
+            label: "Scarlet Hub",
+            url: "https://scarlethub.rutgers.edu/"
+          }
+        ]
+      }
+    ]
+  }
+};
 
+export default CAMPUS_DIRECTORY;
   rutgers_nk: {
     displayName: "Rutgers — Newark",
     resources: [
