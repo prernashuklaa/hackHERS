@@ -3,18 +3,16 @@ console.log("campusSearch.js loaded");
 window.customCampusName = window.customCampusName || "";
 
 window.confirmCampusSearch = function confirmCampusSearch() {
-  console.log("Search button clicked");
-
   const input = document.getElementById("campusSearch");
   const select = document.getElementById("campusSelect");
   const hintEl = document.getElementById("campusHint");
-  const dir = (window.getCampusDirectory ? window.getCampusDirectory() : (window.CAMPUS_DIRECTORY || {}));
+  const dir = window.CAMPUS_DIRECTORY || {};
 
   if (!select || !hintEl) return;
 
   const keyword = (input?.value || "").trim().toLowerCase();
 
-  // Reset dropdown (keep default option)
+  // Reset dropdown
   select.innerHTML = `<option value="">No campus selected</option>`;
   window.customCampusName = "";
 
@@ -48,7 +46,7 @@ window.renderCampusHint = function renderCampusHint() {
   if (!hintEl) return;
 
   const campusKey = document.getElementById("campusSelect")?.value;
-  const dir = (window.getCampusDirectory ? window.getCampusDirectory() : (window.CAMPUS_DIRECTORY || {}));
+  const dir = window.CAMPUS_DIRECTORY || {};
 
   if (campusKey && dir[campusKey]) {
     hintEl.textContent = `Showing on-campus options for ${dir[campusKey].displayName}.`;
