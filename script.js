@@ -704,6 +704,15 @@ function stepsForIntent(intent, { campusKey, campusLabel, geo }) {
           { bucket: "also", text: "Make a 45-minute plan: 25 min work → 5 min break → repeat once." },
         ];
       }
+      if (scenario === "academic_recovery") {
+  return [
+    { bucket: "now", text: "Open your syllabus and list the next 2 graded items only — ignore the rest." },
+    { bucket: "now", text: "Calculate: what grade do you need on the next exam to stabilize?" },
+    { bucket: "next", text: `Go to office hours${campusText} with one specific question, not a general 'I'm struggling.'` },
+    { bucket: "next", text: "Ask if there are past exams or practice sets you can use." },
+    { bucket: "also", text: "Form a 2-person accountability check-in before the next test." },
+  ];
+}
       if (intent.sub === "writing") {
         return [
           { bucket: "now", text: `Book a writing center slot${campusText} (even 20 minutes helps).` },
@@ -725,6 +734,14 @@ function stepsForIntent(intent, { campusKey, campusLabel, geo }) {
           { bucket: "also", text: "Reduce load: pick 1 task to drop/postpone for 24 hours." },
         ];
       }
+      if (scenario === "adjustment_loneliness") {
+  return [
+    { bucket: "now", text: "Identify one recurring space (club meeting, gym class, study room) you can attend weekly." },
+    { bucket: "now", text: "Sit next to someone in class and ask one low-stakes question after lecture." },
+    { bucket: "next", text: "Join one org related to your major AND one unrelated (low pressure)." },
+    { bucket: "also", text: "Remind yourself: most groups look formed but are still fluid early in semester." },
+  ];
+}
       if (intent.sub === "sleep") {
         return [
           { bucket: "now", text: "Set a realistic ‘lights out’ time (even 30 minutes earlier helps)." },
@@ -773,6 +790,30 @@ function stepsForIntent(intent, { campusKey, campusLabel, geo }) {
         { bucket: "now", text: `Book a clinic appointment${campusText} or nearby provider.` },
         { bucket: "next", text: "Bring insurance info + a quick symptom list." },
       ];
+      if (scenario === "physical_injury") {
+  return [
+    { bucket: "now", text: "Stop activity that aggravates it until evaluated." },
+    { bucket: "now", text: "Ice 15–20 minutes and elevate if swollen." },
+    { bucket: "next", text: `Book sports medicine or primary care${campusText}.` },
+    { bucket: "also", text: "If playoffs are soon, ask about taping/bracing options." },
+  ];
+}
+      if (scenario === "sexual_health") {
+  return [
+    { bucket: "now", text: `Schedule confidential STI testing${campusText}.` },
+    { bucket: "next", text: "Ask about full panel vs symptom-based testing." },
+    { bucket: "next", text: "Discuss testing cadence for ongoing relationship." },
+    { bucket: "also", text: "If anxious, request rapid-result options." },
+  ];
+}
+      if (scenario === "overload") {
+  return [
+    { bucket: "now", text: "Open your calendar and block 30 minutes labeled 'stabilize week'." },
+    { bucket: "now", text: "Choose ONE domain to handle today. Not three." },
+    { bucket: "next", text: "Move non-urgent tasks 3–5 days out intentionally." },
+    { bucket: "also", text: "Reduce commitments temporarily — this is triage mode." },
+  ];
+}
 
     case "financial_support":
       return [
@@ -780,6 +821,14 @@ function stepsForIntent(intent, { campusKey, campusLabel, geo }) {
         { bucket: "next", text: "List your next 2 bills and their due dates to reduce panic." },
         { bucket: "next", text: "Ask if emergency grants or short-term help is available." },
       ];
+      if (scenario === "financial_instability") {
+  return [
+    { bucket: "now", text: "Check if emergency grants or short-term loans are available this week." },
+    { bucket: "now", text: "Email landlord explaining timeline + ask about short extension if needed." },
+    { bucket: "next", text: "List fixed vs flexible expenses for this month only." },
+    { bucket: "also", text: "Ask financial aid if a re-evaluation is possible due to changed circumstances." },
+  ];
+}
 
     case "housing_support":
       return [
@@ -852,7 +901,37 @@ function situationalBoost(intent, rawText) {
 
   return 0;
 }
+function detectScenario(rawText) {
+  const t = normalizeText(rawText);
+
+  if (/\b(lonely|isolated|out of place|no friends|transfer|new here)\b/.test(t)) {
+    return "adjustment_loneliness";
+  }
+
+  if (/\b(overwhelmed|too much|piling up|everything at once)\b/.test(t)) {
+    return "overload";
+  }
+
+  if (/\b(behind|falling behind|recover my grade|doing poorly|failed|bombed)\b/.test(t)) {
+    return "academic_recovery";
+  }
+
+  if (/\b(rent|eviction|can't pay|cover rent|financial crisis)\b/.test(t)) {
+    return "financial_instability";
+  }
+
+  if (/\b(injury|hurt|sprain|swollen|pain while running)\b/.test(t)) {
+    return "physical_injury";
+  }
+
+  if (/\b(sti|std|testing|pregnancy test)\b/.test(t)) {
+    return "sexual_health";
+  }
+
+  return "general";
+}
 function buildNextSteps(intents, ctx) {
+  const scenario = detectScenario(ctx.rawText);
   // Crisis override
   if (intents.some((i) => i.tag === "crisis")) {
     return {
