@@ -275,6 +275,12 @@ const MATCH_RULES = [
 
 { tag: "health_support", sub: "primary", weight: 22,
   patterns: [/\b(sexual health|sexual issue|sexual problem|pain during sex|painful sex|birth control|contraception)\b/] },
+  // ===== SPORTS / INJURY =====
+{ tag: "health_support", sub: "primary", weight: 22,
+  patterns: [/\b(ankle|sprain|sprained|injury|injured|hurt my|twisted|swollen|swelling|pain while running|sports injury)\b/] },
+
+{ tag: "health_support", sub: "urgent", weight: 20,
+  patterns: [/\b(can't walk|cannot walk|broken|fracture|fractured|bone|severe swelling|severe pain)\b/] },
   // ===== FUN / THINGS TO DO =====
   { tag: "recreation_support", sub: "default", weight: 12, patterns: [/\b(what to do|things to do|fun|bored|hang out|near campus)\b/] },
   { tag: "community_support", sub: "events", weight: 11, patterns: [/\b(events?|concert|show|festival|tonight|weekend)\b/] },
