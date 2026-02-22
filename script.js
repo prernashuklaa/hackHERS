@@ -948,10 +948,7 @@ if (scenario === "overload") {
     ]
   };
 }
-  if (overloadModifier) {
-  buckets.now = [...overloadModifier.now, ...buckets.now].slice(0,3);
-  buckets.also = [...(buckets.also || []), ...overloadModifier.also].slice(0,3);
-}
+  
 const ranked = [...intents].sort((a, b) => {
   const aScore = (a.score || 0)
     + urgencyBoost(a)
@@ -1043,7 +1040,10 @@ function isSchedulingStep(text) {
   if (buckets.now.length === 0) {
     buckets.now.push("Take one small step: pick the most urgent issue and handle it first.");
   }
-
+if (overloadModifier) {
+  buckets.now = [...overloadModifier.now, ...buckets.now].slice(0,3);
+  buckets.also = [...(buckets.also || []), ...overloadModifier.also].slice(0,3);
+}
   return buckets;
 }
 
