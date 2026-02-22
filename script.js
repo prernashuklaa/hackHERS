@@ -487,7 +487,7 @@ function detectIntents(text) {
 
   for (const r of rankedPairs) {
     if (!usedTags.has(r.tag)) {
-      picked.push({ tag: r.tag, sub: r.sub, keyword: r.keyword });
+      picked.push({ tag: r.tag, sub: r.sub, keyword: r.keyword, score: r.score });
       usedTags.add(r.tag);
     }
     if (picked.length >= 4) break;
@@ -810,7 +810,25 @@ function stepsForIntent(intent, { campusKey, campusLabel, geo }) {
       ];
   }
 }
+function urgencyBoost(intent) {
+  // Bigger = more urgent
+  if (intent.tag === "crisis") return 1000;
 
+  // Health tends to be more time-sensitive than academic
+  if (intent.tag === "health_support" && intent.sub === "urgent") return 200;
+  if (intent.tag === "health_support" && intent.sub === "sti") return 120;
+  if (intent.tag === "health_support") return 80;
+
+  // Exams upcoming should outrank generic academic
+  if (intent.tag === "academic_support" && intent.sub === "test_prep") return 90;
+  if (intent.tag === "academic_support") return 60;
+
+  // Mental health can be urgent but not always “today” unless crisis words exist
+  if (intent.tag === "mental_health" && (intent.sub === "therapy" || intent.sub === "stress")) return 70;
+  if (intent.tag === "mental_health") return 55;
+
+  return 0;
+}
 function buildNextSteps(intents, ctx) {
   // Crisis override
   if (intents.some((i) => i.tag === "crisis")) {
@@ -823,12 +841,16 @@ function buildNextSteps(intents, ctx) {
       also: [],
     };
   }
-
+const ranked = [...intents].sort((a, b) => {
+  const aScore = (a.score || 0) + urgencyBoost(a);
+  const bScore = (b.score || 0) + urgencyBoost(b);
+  return bScore - aScore;
+});
   // 1) Prefer distinct tags first (so one category doesn't dominate)
   const distinct = [];
   const usedTags = new Set();
 
-  for (const it of intents) {
+  for (const it of ranked) {
     if (!usedTags.has(it.tag)) {
       distinct.push(it);
       usedTags.add(it.tag);
@@ -858,14 +880,15 @@ function buildNextSteps(intents, ctx) {
     return true;
   }
 
-  // 2) Give each category ONE “Do now” step first
   for (const it of distinct) {
-    const steps = stepsForIntent(it, ctx);
+  const steps = stepsForIntent(it, ctx);
 
-    // try to grab the best "now" step from each intent
-    const nowStep = steps.find((s) => s.bucket === "now");
-    if (nowStep) add("now", nowStep.text, 3);
-  }
+  // Prefer a "now" step that contains a scheduling action for health stuff
+  let nowStep = steps.find((s) => s.bucket === "now" && /schedule|book|call|urgent care/i.test(s.text));
+  if (!nowStep) nowStep = steps.find((s) => s.bucket === "now");
+
+  if (nowStep) add("now", nowStep.text, 3);
+}
 
   // 3) Then fill remaining slots using all steps
   const allIntents = distinct; // keep it tight (3 categories)
