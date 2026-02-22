@@ -806,7 +806,7 @@ function stepsForIntent(intent, { campusKey, campusLabel, geo }) {
 }
 
 function buildNextSteps(intents, ctx) {
-  // Crisis override (you already detect crisis)
+  // Crisis override
   if (intents.some((i) => i.tag === "crisis")) {
     return {
       now: [
@@ -818,27 +818,69 @@ function buildNextSteps(intents, ctx) {
     };
   }
 
-  const buckets = { now: [], next: [], also: [] };
+  // 1) Prefer distinct tags first (so one category doesn't dominate)
+  const distinct = [];
+  const usedTags = new Set();
 
-  // Gather steps from up to 3 intents (keeps it short)
-  const top = intents.slice(0, 3);
-  const seen = new Set();
+  for (const it of intents) {
+    if (!usedTags.has(it.tag)) {
+      distinct.push(it);
+      usedTags.add(it.tag);
+    }
+    if (distinct.length >= 3) break;
+  }
 
-  for (const it of top) {
-    const steps = stepsForIntent(it, ctx);
-    for (const s of steps) {
-      const key = s.text.toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-
-      if (s.bucket === "now" && buckets.now.length < 2) buckets.now.push(s.text);
-      else if (s.bucket === "next" && buckets.next.length < 2) buckets.next.push(s.text);
-      else if (buckets.also.length < 2) buckets.also.push(s.text);
+  // If fewer than 3 distinct tags, fill from remaining
+  if (distinct.length < 3) {
+    for (const it of intents) {
+      if (distinct.some((x) => x.tag === it.tag && x.sub === it.sub)) continue;
+      distinct.push(it);
+      if (distinct.length >= 3) break;
     }
   }
 
+  const buckets = { now: [], next: [], also: [] };
+  const seen = new Set();
+
+  // helper to add items safely
+  function add(bucket, text, limit) {
+    const key = text.toLowerCase();
+    if (seen.has(key)) return false;
+    if (buckets[bucket].length >= limit) return false;
+    seen.add(key);
+    buckets[bucket].push(text);
+    return true;
+  }
+
+  // 2) Give each category ONE “Do now” step first
+  for (const it of distinct) {
+    const steps = stepsForIntent(it, ctx);
+
+    // try to grab the best "now" step from each intent
+    const nowStep = steps.find((s) => s.bucket === "now");
+    if (nowStep) add("now", nowStep.text, 3);
+  }
+
+  // 3) Then fill remaining slots using all steps
+  const allIntents = distinct; // keep it tight (3 categories)
+  for (const it of allIntents) {
+    const steps = stepsForIntent(it, ctx);
+    for (const s of steps) {
+      if (add("now", s.text, 3)) continue;
+      if (add("next", s.text, 3)) continue;
+      add("also", s.text, 3);
+    }
+  }
+
+  // Guarantee at least 2 items in "now" if possible
+  if (buckets.now.length < 2 && buckets.next.length) {
+    buckets.now.push(buckets.next.shift());
+  }
+
   // Guarantee at least 1 “now”
-  if (buckets.now.length === 0) buckets.now.push("Take one small step: pick the most urgent issue and handle it first.");
+  if (buckets.now.length === 0) {
+    buckets.now.push("Take one small step: pick the most urgent issue and handle it first.");
+  }
 
   return buckets;
 }
