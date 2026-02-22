@@ -428,22 +428,36 @@ function detectIntents(text) {
   return ranked;
 }
 
-// ---------- Campus matching (FIXED) ----------
 function resourceMatchesIntent(resource, intent) {
-  // Preferred: structured intents
+  // If the resource has structured intents
   if (Array.isArray(resource.intents)) {
-    return resource.intents.some((it) => {
-      if (!it) return false;
-      if (it.tag !== intent.tag) return false;
+    // 1) Exact match
+    const exact = resource.intents.some((it) => it?.tag === intent.tag && it?.sub === intent.sub);
+    if (exact) return true;
 
-      // Wildcard behavior:
-      // - resource sub "default" matches any sub under the tag
-      // - intent sub "default" matches any resource under the tag
-      if (it.sub === "default" || intent.sub === "default") return true;
+    // 2) IMPORTANT: If user intent is "default", allow ANY resource with same tag to match.
+    // Example: user -> mental_health::default should match campus resource mental_health::therapy
+    if (intent.sub === "default") {
+      return resource.intents.some((it) => it?.tag === intent.tag);
+    }
 
-      return it.sub === intent.sub;
-    });
+    // 3) Also helpful: if resource intent is "default", let it match any sub-intent under that tag
+    // Example: resource mental_health::default matches user mental_health::therapy
+    return resource.intents.some((it) => it?.tag === intent.tag && it?.sub === "default");
   }
+
+  // Backward-compatible tag-only matching
+  const tags = Array.isArray(resource.tags) ? resource.tags : [];
+  if (!tags.includes(intent.tag)) return false;
+
+  // If user intent is default, tag match is enough
+  if (intent.sub === "default") return true;
+
+  const subTags = Array.isArray(resource.subTags) ? resource.subTags : [];
+  if (subTags.length) return subTags.includes(intent.sub);
+
+  return true;
+}
 
   // Backward-compatible: tags only
   const tags = Array.isArray(resource.tags) ? resource.tags : [];
