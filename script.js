@@ -829,6 +829,27 @@ function urgencyBoost(intent) {
 
   return 0;
 }
+function situationalBoost(intent, rawText) {
+  const t = rawText.toLowerCase();
+
+  // Financial crisis words
+  if (
+    intent.tag === "financial_support" &&
+    /rent|evict|eviction|can'?t pay|cant pay|cover rent|bill due|past due/i.test(t)
+  ) {
+    return 200;
+  }
+
+  // Housing instability
+  if (
+    intent.tag === "housing_support" &&
+    /heat|heating|landlord|unsafe|broken|not fixing|maintenance/i.test(t)
+  ) {
+    return 180;
+  }
+
+  return 0;
+}
 function buildNextSteps(intents, ctx) {
   // Crisis override
   if (intents.some((i) => i.tag === "crisis")) {
@@ -842,8 +863,14 @@ function buildNextSteps(intents, ctx) {
     };
   }
 const ranked = [...intents].sort((a, b) => {
-  const aScore = (a.score || 0) + urgencyBoost(a);
-  const bScore = (b.score || 0) + urgencyBoost(b);
+  const aScore = (a.score || 0)
+    + urgencyBoost(a)
+    + situationalBoost(a, ctx.rawText);
+
+  const bScore = (b.score || 0)
+    + urgencyBoost(b)
+    + situationalBoost(b, ctx.rawText);
+
   return bScore - aScore;
 });
   // 1) Prefer distinct tags first (so one category doesn't dominate)
@@ -1106,7 +1133,7 @@ window.analyze = async function analyze() {
 
   const geo = await getGeoIfAllowed();
   const outside = buildOutsideResources(intents, geo);
-  const nextSteps = buildNextSteps(intents, { campusKey, campusLabel, geo });
+  const nextSteps = buildNextSteps(intents, { campusKey, campusLabel, geo, rawText: text });
 const nextStepsBlock = renderNextStepsCard(nextSteps);
 
   const chips = intents
