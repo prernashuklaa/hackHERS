@@ -689,168 +689,146 @@ function buildOutsideResources(intents, geo) {
   });
 }
 // ---------- Personalized Next Steps ----------
-function stepsForIntent(intent, { campusKey, campusLabel, geo }) {
+function stepsForIntent(intent, { campusKey, campusLabel, geo, scenario }) {
   const onCampus = Boolean(campusKey);
   const campusText = onCampus && campusLabel ? ` at ${campusLabel}` : "";
 
-  // Each step is short + action-based
   switch (intent.tag) {
-    case "academic_support":
-      if (intent.sub === "tutoring" || intent.sub === "default" || intent.sub === "test_prep") {
+    case "academic_support": {
+      if (scenario === "academic_recovery") {
         return [
-          { bucket: "now", text: "Pick one class to triage first (the most urgent deadline)." },
-          { bucket: "next", text: `Open tutoring/learning support${campusText} and book the earliest slot.` },
-          { bucket: "next", text: "Email your professor/TA: ask what to focus on this week + confirm office hours." },
-          { bucket: "also", text: "Make a 45-minute plan: 25 min work → 5 min break → repeat once." },
+          { bucket: "now", text: "Open your syllabus and list the next 2 graded items only — ignore the rest." },
+          { bucket: "now", text: "Identify what you can realistically finish in 60–90 minutes today." },
+          { bucket: "next", text: `Go to office hours${campusText} with ONE specific question.` },
+          { bucket: "also", text: "Ask if there are practice problems or past exams you can use." },
         ];
       }
-      if (scenario === "academic_recovery") {
-  return [
-    { bucket: "now", text: "Open your syllabus and list the next 2 graded items only — ignore the rest." },
-    { bucket: "now", text: "Calculate: what grade do you need on the next exam to stabilize?" },
-    { bucket: "next", text: `Go to office hours${campusText} with one specific question, not a general 'I'm struggling.'` },
-    { bucket: "next", text: "Ask if there are past exams or practice sets you can use." },
-    { bucket: "also", text: "Form a 2-person accountability check-in before the next test." },
-  ];
-}
+
       if (intent.sub === "writing") {
         return [
           { bucket: "now", text: `Book a writing center slot${campusText} (even 20 minutes helps).` },
           { bucket: "now", text: "Write a 3-sentence thesis + 3 bullet outline before editing anything." },
-          { bucket: "next", text: "Run a quick citation check (APA/MLA) and fix missing sources." },
+          { bucket: "next", text: "Do a citation sweep: fix missing sources + formatting." },
         ];
       }
-      return [
-        { bucket: "now", text: "Identify the exact thing you’re stuck on (topic, assignment, or exam)." },
-        { bucket: "next", text: `Use academic support${campusText} to get targeted help.` },
-      ];
 
-    case "mental_health":
-      if (intent.sub === "therapy" || intent.sub === "default" || intent.sub === "stress") {
+      if (intent.sub === "test_prep") {
         return [
-          { bucket: "now", text: "Take one tiny reset: drink water + unclench your shoulders + 3 slow breaths." },
-          { bucket: "next", text: `If you can, schedule counseling/wellness support${campusText}.` },
-          { bucket: "also", text: "Text a friend: “Can you check in with me tonight?”" },
-          { bucket: "also", text: "Reduce load: pick 1 task to drop/postpone for 24 hours." },
+          { bucket: "now", text: "Do a 20-minute exam triage: list weak topics + do 3 practice problems." },
+          { bucket: "next", text: "Study by questions (practice → review mistakes → repeat), not rereading." },
+          { bucket: "also", text: `If you’re stuck, use office hours${campusText} with one concrete problem.` },
         ];
       }
+
+      // tutoring/default
+      return [
+        { bucket: "now", text: "Pick one class to triage first (the most urgent deadline)." },
+        { bucket: "next", text: `Open tutoring/learning support${campusText} and book the earliest slot.` },
+        { bucket: "next", text: "Email your professor/TA: ask what to focus on this week + confirm office hours." },
+        { bucket: "also", text: "Make a 45-minute plan: 25 min work → 5 min break → repeat once." },
+      ];
+    }
+
+    case "mental_health": {
       if (scenario === "adjustment_loneliness") {
-  return [
-    { bucket: "now", text: "Identify one recurring space (club meeting, gym class, study room) you can attend weekly." },
-    { bucket: "now", text: "Sit next to someone in class and ask one low-stakes question after lecture." },
-    { bucket: "next", text: "Join one org related to your major AND one unrelated (low pressure)." },
-    { bucket: "also", text: "Remind yourself: most groups look formed but are still fluid early in semester." },
-  ];
-}
+        return [
+          { bucket: "now", text: "Pick 1 recurring space you can attend weekly (club, gym class, study room)." },
+          { bucket: "now", text: "Do 1 low-stakes interaction today: ask someone a quick class question." },
+          { bucket: "next", text: "Join 1 major-related org + 1 just-for-fun org (lower pressure)." },
+          { bucket: "also", text: `If it feels heavy, consider counseling/wellness support${campusText}.` },
+        ];
+      }
+
       if (intent.sub === "sleep") {
         return [
-          { bucket: "now", text: "Set a realistic ‘lights out’ time (even 30 minutes earlier helps)." },
-          { bucket: "next", text: "Stop caffeine 8 hours before sleep; dim screens 45 minutes before bed." },
-          { bucket: "next", text: `If this is ongoing, consider wellness support${campusText}.` },
+          { bucket: "now", text: "Set a realistic lights-out target (even 30 minutes earlier helps)." },
+          { bucket: "next", text: "Cut caffeine 8 hours before bed; dim screens 45 minutes before sleep." },
+          { bucket: "also", text: `If this persists, consider wellness support${campusText}.` },
         ];
       }
-      return [
-        { bucket: "now", text: "Name what you’re feeling (stress/anxiety/loneliness) — it lowers intensity." },
-        { bucket: "next", text: `Reach out for support${campusText}.` },
-      ];
 
-    case "food_support":
-      if (intent.sub === "pantry" || intent.sub === "free_meals" || intent.sub === "cheap") {
-        return [
-          { bucket: "now", text: "Check for a campus pantry / free meal option first (fastest + lowest cost)." },
-          { bucket: "next", text: "If you’re low on funds, plan 2–3 cheap staples for the week (rice/pasta/eggs/beans)." },
-        ];
-      }
-      if (intent.sub === "late_night") {
-        return [
-          { bucket: "now", text: "Check what’s open late near you and pick the closest option." },
-          { bucket: "next", text: "Save 2 reliable late-night spots so you don’t have to search next time." },
-        ];
-      }
       return [
-        { bucket: "now", text: "Decide: dining hall vs quick off-campus option." },
-        { bucket: "next", text: "Save a couple ‘default meals’ for stressful weeks." },
+        { bucket: "now", text: "Take one tiny reset: drink water + unclench your shoulders + 3 slow breaths." },
+        { bucket: "next", text: `If you can, schedule counseling/wellness support${campusText}.` },
+        { bucket: "also", text: "Text a friend: “Can you check in with me tonight?”" },
+        { bucket: "also", text: "Reduce load: pick 1 task to drop/postpone for 24 hours." },
       ];
+    }
 
-    case "health_support":
+    case "health_support": {
+      if (scenario === "physical_injury") {
+        return [
+          { bucket: "now", text: "Stop the activity that aggravates it until evaluated." },
+          { bucket: "now", text: "Ice 15–20 minutes and elevate if swollen." },
+          { bucket: "next", text: `Book sports medicine or primary care${campusText}.` },
+          { bucket: "also", text: "If pain is severe or you can’t bear weight, use urgent care." },
+        ];
+      }
+
+      if (scenario === "sexual_health" || intent.sub === "sti") {
+        return [
+          { bucket: "now", text: `Schedule confidential STI testing${campusText} (or nearby clinic if faster).` },
+          { bucket: "next", text: "Ask about full panel vs symptom-based testing." },
+          { bucket: "next", text: "Avoid guessing — confirm results before self-treating." },
+          { bucket: "also", text: "If cost is a concern, ask about confidential/low-cost options." },
+        ];
+      }
+
       if (intent.sub === "urgent") {
         return [
           { bucket: "now", text: "If symptoms feel severe or sudden, prioritize urgent care today." },
           { bucket: "next", text: "Write down symptoms + timing + meds so it’s easy to explain." },
         ];
       }
-      if (intent.sub === "sti") {
+
+      return [
+        { bucket: "now", text: `Book a clinic appointment${campusText} or nearby provider.` },
+        { bucket: "next", text: "Bring insurance info + a quick symptom list." },
+      ];
+    }
+
+    case "food_support": {
+      if (intent.sub === "late_night") {
         return [
-          { bucket: "now", text: `Schedule STI testing${campusText} (or nearby clinic if faster).` },
-          { bucket: "next", text: "Avoid guessing — confirm results before self-treating." },
-          { bucket: "next", text: "If needed, ask about confidential options and cost." },
+          { bucket: "now", text: "Check what’s open late near you and pick the closest option." },
+          { bucket: "next", text: "Save 2 reliable late-night spots so you don’t have to search next time." },
         ];
       }
-      
-      if (scenario === "overload") {
-  return [
-    { bucket: "now", text: "Open your calendar and block 30 minutes labeled 'stabilize week'." },
-    { bucket: "now", text: "Choose ONE domain to handle today. Not three." },
-    { bucket: "next", text: "Move non-urgent tasks 3–5 days out intentionally." },
-    { bucket: "also", text: "Reduce commitments temporarily — this is triage mode." },
-  ];
-}
 
-    case "financial_support":
-  if (scenario === "financial_instability") {
-    return [
-      { bucket: "now", text: "Check if emergency grants or short-term aid is available this week." },
-      { bucket: "now", text: "If something is due, contact the billing office/landlord today to ask about an extension." },
-      { bucket: "next", text: "List fixed vs flexible expenses for this month only." },
-      { bucket: "also", text: "Ask financial aid if a re-evaluation is possible due to changed circumstances." },
-    ];
-  }
+      if (intent.sub === "pantry" || intent.sub === "free_meals" || intent.sub === "cheap") {
+        return [
+          { bucket: "now", text: "Check for a campus pantry / free meal option first (fastest + lowest cost)." },
+          { bucket: "next", text: "Plan 2–3 cheap staples for the week (rice/pasta/eggs/beans)." },
+        ];
+      }
 
-  return [
-    { bucket: "now", text: `Check financial aid / basic needs support${campusText}.` },
-    { bucket: "next", text: "List your next 2 bills and their due dates to reduce panic." },
-    { bucket: "next", text: "Ask if emergency grants or short-term help is available." },
-  ];
-case "health_support":
-  if (scenario === "physical_injury") {
-    return [
-      { bucket: "now", text: "Stop activity that aggravates it until evaluated." },
-      { bucket: "now", text: "Ice 15–20 minutes and elevate if swollen." },
-      { bucket: "next", text: `Book sports medicine or primary care${campusText}.` },
-      { bucket: "also", text: "If pain is severe or you can’t bear weight, use urgent care." },
-    ];
-  }
+      return [
+        { bucket: "now", text: "Decide: dining hall vs quick off-campus option." },
+        { bucket: "next", text: "Save a couple ‘default meals’ for stressful weeks." },
+      ];
+    }
 
-  if (scenario === "sexual_health" || intent.sub === "sti") {
-    return [
-      { bucket: "now", text: `Schedule confidential STI testing${campusText} (or nearby clinic if faster).` },
-      { bucket: "next", text: "Ask about full panel vs symptom-based testing." },
-      { bucket: "next", text: "Avoid guessing — confirm results before self-treating." },
-      { bucket: "also", text: "If you’re worried about cost, ask about confidential/low-cost options." },
-    ];
-  }
+    case "financial_support": {
+      if (scenario === "financial_instability") {
+        return [
+          { bucket: "now", text: "Check if emergency grants or short-term aid are available this week." },
+          { bucket: "now", text: "If something is due, contact billing/landlord today and ask for an extension." },
+          { bucket: "next", text: "List fixed vs flexible expenses for this month only." },
+          { bucket: "also", text: "Ask financial aid if a re-evaluation is possible due to changed circumstances." },
+        ];
+      }
 
-  if (intent.sub === "urgent") {
-    return [
-      { bucket: "now", text: "If symptoms feel severe or sudden, prioritize urgent care today." },
-      { bucket: "next", text: "Write down symptoms + timing + meds so it’s easy to explain." },
-    ];
-  }
+      return [
+        { bucket: "now", text: `Check financial aid / basic needs support${campusText}.` },
+        { bucket: "next", text: "List your next 2 bills and their due dates to reduce panic." },
+        { bucket: "also", text: "Ask if emergency grants or short-term help is available." },
+      ];
+    }
 
-  return [
-    { bucket: "now", text: `Book a clinic appointment${campusText} or nearby provider.` },
-    { bucket: "next", text: "Bring insurance info + a quick symptom list." },
-  ];
     case "housing_support":
       return [
         { bucket: "now", text: `Contact housing/residence life${campusText} if this affects safety or stability.` },
         { bucket: "next", text: "Document issues (photos + dates) if it’s maintenance/roommate conflict." },
-      ];
-
-    case "transport_support":
-      return [
-        { bucket: "now", text: "Check today’s route/schedule and screenshot it." },
-        { bucket: "next", text: "Save a backup route (bus/train/rideshare pickup spot)." },
       ];
 
     case "community_support":
@@ -919,9 +897,9 @@ function detectScenario(rawText) {
     return "adjustment_loneliness";
   }
 
-  if (/\b(overwhelmed|too much|piling up|everything at once)\b/.test(t)) {
-    return "overload";
-  }
+  if (/\b(overwhelmed|overload|too much|piling up|everything at once|drained|exhausted|burned out|burnt out|drowning|can't keep up|cant keep up|overcommitted|over committed|too many things|stretched thin|i can't do this|cant do this)\b/.test(t)) {
+  return "overload";
+}
 
   if (/\b(behind|falling behind|recover my grade|doing poorly|failed|bombed)\b/.test(t)) {
     return "academic_recovery";
