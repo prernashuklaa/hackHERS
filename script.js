@@ -357,7 +357,8 @@ const MATCH_RULES = [
 // Depression / low mood
 { tag: "mental_health", sub: "default", weight: 22, patterns: [/\b(depressed|depression|hopeless|empty|numb|worthless|no motivation|unmotivated)\b/] },
 { tag: "mental_health", sub: "default", weight: 18, patterns: [/\b(sad|down|low|miserable|exhausted emotionally)\b/] },
-
+{ tag: "mental_health", sub: "therapy", weight: 22, patterns: [/\b(depressed|depression|hopeless|empty|numb|worthless)\b/] },
+{ tag: "mental_health", sub: "therapy", weight: 18, patterns: [/\b(sad|down|low|crying)\b/] },
 // Loneliness / social isolation (often mental-health related)
 { tag: "mental_health", sub: "default", weight: 16, patterns: [/\b(lonely|alone|isolated|no friends|no one to talk to|left out)\b/] },
 
