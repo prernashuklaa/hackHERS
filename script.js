@@ -697,9 +697,9 @@ function stepsForIntent(intent, { campusKey, campusLabel, geo }) {
       if (intent.sub === "tutoring" || intent.sub === "default" || intent.sub === "test_prep") {
         return [
           { bucket: "now", text: "Pick one class to triage first (the most urgent deadline)." },
-          { bucket: "now", text: `Open tutoring/learning support${campusText} and book the earliest slot.` },
+          { bucket: "next", text: `Open tutoring/learning support${campusText} and book the earliest slot.` },
           { bucket: "next", text: "Email your professor/TA: ask what to focus on this week + confirm office hours." },
-          { bucket: "next", text: "Make a 45-minute plan: 25 min work → 5 min break → repeat once." },
+          { bucket: "also", text: "Make a 45-minute plan: 25 min work → 5 min break → repeat once." },
         ];
       }
       if (intent.sub === "writing") {
@@ -718,9 +718,9 @@ function stepsForIntent(intent, { campusKey, campusLabel, geo }) {
       if (intent.sub === "therapy" || intent.sub === "default" || intent.sub === "stress") {
         return [
           { bucket: "now", text: "Take one tiny reset: drink water + unclench your shoulders + 3 slow breaths." },
-          { bucket: "now", text: `If you can, schedule counseling/wellness support${campusText}.` },
-          { bucket: "next", text: "Text a friend: “Can you check in with me tonight?”" },
-          { bucket: "next", text: "Reduce load: pick 1 task to drop/postpone for 24 hours." },
+          { bucket: "next", text: `If you can, schedule counseling/wellness support${campusText}.` },
+          { bucket: "also", text: "Text a friend: “Can you check in with me tonight?”" },
+          { bucket: "also", text: "Reduce load: pick 1 task to drop/postpone for 24 hours." },
         ];
       }
       if (intent.sub === "sleep") {
@@ -871,14 +871,30 @@ const ranked = [...intents].sort((a, b) => {
   const seen = new Set();
 
   // helper to add items safely
+  let nowScheduleCount = 0;
+let nextScheduleCount = 0;
+
+function isSchedulingStep(text) {
+  return /schedule|book|make an appointment|call|urgent care/i.test(text);
+}
   function add(bucket, text, limit) {
-    const key = text.toLowerCase();
-    if (seen.has(key)) return false;
-    if (buckets[bucket].length >= limit) return false;
-    seen.add(key);
-    buckets[bucket].push(text);
-    return true;
+  const key = text.toLowerCase();
+  if (seen.has(key)) return false;
+  if (buckets[bucket].length >= limit) return false;
+
+  // limit scheduling actions
+  if (isSchedulingStep(text)) {
+    if (bucket === "now" && nowScheduleCount >= 1) return false;
+    if (bucket === "next" && nextScheduleCount >= 2) return false;
+
+    if (bucket === "now") nowScheduleCount++;
+    if (bucket === "next") nextScheduleCount++;
   }
+
+  seen.add(key);
+  buckets[bucket].push(text);
+  return true;
+}
 
   for (const it of distinct) {
   const steps = stepsForIntent(it, ctx);
