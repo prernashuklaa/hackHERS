@@ -281,13 +281,44 @@ const MATCH_RULES = [
   { tag: "community_support", sub: "clubs", weight: 10, patterns: [/\b(clubs?|student orgs?|join a club|meet people|make friends)\b/] },
 
   // ===== ACADEMIC (kept, but NOT default fallback) =====
-  { tag: "academic_support", sub: "tutoring", weight: 10, patterns: [/\b(tutor|tutoring|learning center|help with homework)\b/] },
-  { tag: "academic_support", sub: "writing", weight: 10, patterns: [/\b(writing center|essay help|paper help|writing help)\b/] },
-  { tag: "academic_support", sub: "math", weight: 10, patterns: [/\b(math help|calc help|calculus help|algebra help)\b/] },
-  { tag: "academic_support", sub: "advising", weight: 9, patterns: [/\b(advising|advisor|course planning)\b/] },
-  { tag: "academic_support", sub: "library", weight: 8, patterns: [/\b(library|study space|study room)\b/] },
-  { tag: "academic_support", sub: "test_prep", weight: 8, patterns: [/\b(test prep|sat|gre|exam prep)\b/] },
-  { tag: "academic_support", sub: "disability", weight: 8, patterns: [/\b(accommodations|disability services|ods)\b/] },
+// ===== ACADEMIC (expanded) =====
+
+// 1) General “I’m struggling” / workload / schoolwork
+{ tag: "academic_support", sub: "default", weight: 14, patterns: [/\b(school|schoolwork|school work|class|classes|course|courses|coursework|classwork|class work|academics|academic)\b/] },
+{ tag: "academic_support", sub: "default", weight: 16, patterns: [/\b(struggling|having trouble|hard time|confused|lost|don'?t understand|dont understand|need help|help me|stuck|falling behind|behind|overwhelmed)\b/] },
+{ tag: "academic_support", sub: "default", weight: 15, patterns: [/\b(recover my grade|raise my grade|improve my grade|bring up my grade|grade drop|doing bad|doing poorly|failed|failing|bombed|flunked)\b/] },
+
+// 2) Tutoring / learning support / study help
+{ tag: "academic_support", sub: "tutoring", weight: 18, patterns: [/\b(tutor|tutoring|tutors|peer tutor|study help|study support|academic support|learning center|learning centre|success center|student success)\b/] },
+{ tag: "academic_support", sub: "tutoring", weight: 16, patterns: [/\b(help with homework|help with schoolwork|help with school work|help with classwork|help with class work|assignment help|problem set help|pset help|homework help)\b/] },
+{ tag: "academic_support", sub: "tutoring", weight: 14, patterns: [/\b(study group|study groups|study buddy|study partner|accountability partner)\b/] },
+
+// 3) Office hours / professor / TA / recitation
+{ tag: "academic_support", sub: "advising", weight: 14, patterns: [/\b(office hours|professor|prof|instructor|ta\b|teaching assistant|recitation|recitation leader)\b/] },
+
+// 4) Exams / quizzes / midterms / finals
+{ tag: "academic_support", sub: "test_prep", weight: 16, patterns: [/\b(test|tests|exam|exams|midterm|midterms|final|finals|quiz|quizzes|next test|upcoming exam|exam prep|test prep|practice exam|past exams)\b/] },
+{ tag: "academic_support", sub: "test_prep", weight: 13, patterns: [/\b(study plan|study schedule|how to study|study tips|cram|cramming)\b/] },
+
+// 5) Writing help (papers, essays, citations)
+{ tag: "academic_support", sub: "writing", weight: 18, patterns: [/\b(writing center|writing centre|essay|essays|paper|papers|research paper|lab report|report|discussion post|thesis|outline|draft|revision|proofread|proofreading|editing)\b/] },
+{ tag: "academic_support", sub: "writing", weight: 15, patterns: [/\b(citation|citations|apa|mla|chicago|bibliography|works cited|references)\b/] },
+
+// 6) Math / quantitative help (broad)
+{ tag: "academic_support", sub: "math", weight: 18, patterns: [/\b(math|mathematics|calc|calculus|algebra|geometry|trig|trigonometry|statistics|stats|probability|linear algebra|differential equations|discrete math)\b/] },
+
+// 7) Advising / registration / scheduling / majors
+{ tag: "academic_support", sub: "advising", weight: 18, patterns: [/\b(advising|advisor|academic advisor|course planning|degree plan|graduation|credits|credit|major|minor|double major|requirements)\b/] },
+{ tag: "academic_support", sub: "advising", weight: 16, patterns: [/\b(register|registration|add\/drop|add drop|schedule|class schedule|course load|waitlist|prereq|prerequisite|override|SPN|special permission)\b/] },
+
+// 8) Library / study spaces
+{ tag: "academic_support", sub: "library", weight: 16, patterns: [/\b(library|study space|study spaces|study room|study rooms|quiet place|computer lab|printing|printer)\b/] },
+
+// 9) Disability accommodations / accessibility
+{ tag: "academic_support", sub: "disability", weight: 18, patterns: [/\b(accommodations|accommodation|disability services|ods|accessibility|testing accommodations|extra time|note taker|notetaker|reduced distraction)\b/] },
+
+// 10) Extra academic processes: extensions, appeals, withdrawal
+{ tag: "academic_support", sub: "advising", weight: 14, patterns: [/\b(extension|deadline extension|late work|incomplete\b|withdraw|withdrawal|drop a class|pass\/fail|pass fail|academic probation)\b/] },
 
   // ===== CAREER =====
   { tag: "career_support", sub: "resume", weight: 9, patterns: [/\b(resume|cv)\b/] },
