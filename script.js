@@ -1107,7 +1107,6 @@ const nextStepsBlock = renderNextStepsCard(nextSteps);
 
 const html = header + nextStepsBlock + campusBlock + outsideBlock + disclaimer;
   outputEl.innerHTML = html;
-  outputEl.scrollIntoView({ behavior: "smooth", block: "start" });
   // Save chat
   const now = new Date();
   const chats = loadChats();
