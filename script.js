@@ -786,26 +786,7 @@ function stepsForIntent(intent, { campusKey, campusLabel, geo }) {
           { bucket: "next", text: "If needed, ask about confidential options and cost." },
         ];
       }
-      return [
-        { bucket: "now", text: `Book a clinic appointment${campusText} or nearby provider.` },
-        { bucket: "next", text: "Bring insurance info + a quick symptom list." },
-      ];
-      if (scenario === "physical_injury") {
-  return [
-    { bucket: "now", text: "Stop activity that aggravates it until evaluated." },
-    { bucket: "now", text: "Ice 15–20 minutes and elevate if swollen." },
-    { bucket: "next", text: `Book sports medicine or primary care${campusText}.` },
-    { bucket: "also", text: "If playoffs are soon, ask about taping/bracing options." },
-  ];
-}
-      if (scenario === "sexual_health") {
-  return [
-    { bucket: "now", text: `Schedule confidential STI testing${campusText}.` },
-    { bucket: "next", text: "Ask about full panel vs symptom-based testing." },
-    { bucket: "next", text: "Discuss testing cadence for ongoing relationship." },
-    { bucket: "also", text: "If anxious, request rapid-result options." },
-  ];
-}
+      
       if (scenario === "overload") {
   return [
     { bucket: "now", text: "Open your calendar and block 30 minutes labeled 'stabilize week'." },
@@ -816,20 +797,50 @@ function stepsForIntent(intent, { campusKey, campusLabel, geo }) {
 }
 
     case "financial_support":
-      return [
-        { bucket: "now", text: `Check financial aid / basic needs support${campusText}.` },
-        { bucket: "next", text: "List your next 2 bills and their due dates to reduce panic." },
-        { bucket: "next", text: "Ask if emergency grants or short-term help is available." },
-      ];
-      if (scenario === "financial_instability") {
-  return [
-    { bucket: "now", text: "Check if emergency grants or short-term loans are available this week." },
-    { bucket: "now", text: "Email landlord explaining timeline + ask about short extension if needed." },
-    { bucket: "next", text: "List fixed vs flexible expenses for this month only." },
-    { bucket: "also", text: "Ask financial aid if a re-evaluation is possible due to changed circumstances." },
-  ];
-}
+  if (scenario === "financial_instability") {
+    return [
+      { bucket: "now", text: "Check if emergency grants or short-term aid is available this week." },
+      { bucket: "now", text: "If something is due, contact the billing office/landlord today to ask about an extension." },
+      { bucket: "next", text: "List fixed vs flexible expenses for this month only." },
+      { bucket: "also", text: "Ask financial aid if a re-evaluation is possible due to changed circumstances." },
+    ];
+  }
 
+  return [
+    { bucket: "now", text: `Check financial aid / basic needs support${campusText}.` },
+    { bucket: "next", text: "List your next 2 bills and their due dates to reduce panic." },
+    { bucket: "next", text: "Ask if emergency grants or short-term help is available." },
+  ];
+case "health_support":
+  if (scenario === "physical_injury") {
+    return [
+      { bucket: "now", text: "Stop activity that aggravates it until evaluated." },
+      { bucket: "now", text: "Ice 15–20 minutes and elevate if swollen." },
+      { bucket: "next", text: `Book sports medicine or primary care${campusText}.` },
+      { bucket: "also", text: "If pain is severe or you can’t bear weight, use urgent care." },
+    ];
+  }
+
+  if (scenario === "sexual_health" || intent.sub === "sti") {
+    return [
+      { bucket: "now", text: `Schedule confidential STI testing${campusText} (or nearby clinic if faster).` },
+      { bucket: "next", text: "Ask about full panel vs symptom-based testing." },
+      { bucket: "next", text: "Avoid guessing — confirm results before self-treating." },
+      { bucket: "also", text: "If you’re worried about cost, ask about confidential/low-cost options." },
+    ];
+  }
+
+  if (intent.sub === "urgent") {
+    return [
+      { bucket: "now", text: "If symptoms feel severe or sudden, prioritize urgent care today." },
+      { bucket: "next", text: "Write down symptoms + timing + meds so it’s easy to explain." },
+    ];
+  }
+
+  return [
+    { bucket: "now", text: `Book a clinic appointment${campusText} or nearby provider.` },
+    { bucket: "next", text: "Bring insurance info + a quick symptom list." },
+  ];
     case "housing_support":
       return [
         { bucket: "now", text: `Contact housing/residence life${campusText} if this affects safety or stability.` },
@@ -931,7 +942,7 @@ function detectScenario(rawText) {
   return "general";
 }
 function buildNextSteps(intents, ctx) {
-  const scenario = detectScenario(ctx.rawText);
+    const scenario = detectScenario(ctx.rawText);
   // Crisis override
   if (intents.some((i) => i.tag === "crisis")) {
     return {
@@ -943,7 +954,6 @@ function buildNextSteps(intents, ctx) {
       also: [],
     };
   }
-  const scenario = detectScenario(ctx.rawText);
 
 if (scenario === "overload") {
   return {
@@ -1024,7 +1034,7 @@ function isSchedulingStep(text) {
 }
 
   for (const it of distinct) {
-  const steps = stepsForIntent(it, ctx);
+  const steps = stepsForIntent(it, { ...ctx, scenario });
 
   // Prefer a "now" step that contains a scheduling action for health stuff
   let nowStep = steps.find((s) => s.bucket === "now" && /schedule|book|call|urgent care/i.test(s.text));
@@ -1036,7 +1046,7 @@ function isSchedulingStep(text) {
   // 3) Then fill remaining slots using all steps
   const allIntents = distinct; // keep it tight (3 categories)
   for (const it of allIntents) {
-    const steps = stepsForIntent(it, ctx);
+    const steps = stepsForIntent(it, { ...ctx, scenario });
     for (const s of steps) {
       if (add("now", s.text, 3)) continue;
       if (add("next", s.text, 3)) continue;
