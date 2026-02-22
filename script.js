@@ -340,6 +340,7 @@ const MATCH_RULES = [
   { tag: "financial_support", sub: "budgeting", weight: 8, patterns: [/\b(budget|budgeting)\b/] },
   { tag: "financial_support", sub: "taxes", weight: 7, patterns: [/\b(taxes|tax prep)\b/] },
   { tag: "financial_support", sub: "workstudy", weight: 7, patterns: [/\b(work study|work-study|campus job)\b/] },
+  { tag: "financial_support", sub: "grants", weight: 24, patterns: [/\b(can'?t pay|cant pay|cover rent|rent due|past due|short on money|financial crisis)\b/]},
 
   // ===== HOUSING =====
   { tag: "housing_support", sub: "dorm", weight: 8, patterns: [/\b(dorm|residence life)\b/] },
@@ -348,6 +349,7 @@ const MATCH_RULES = [
   { tag: "housing_support", sub: "sublease", weight: 7, patterns: [/\b(sublease|sublet)\b/] },
   { tag: "housing_support", sub: "tenant", weight: 7, patterns: [/\b(tenant rights|renter rights)\b/] },
   { tag: "housing_support", sub: "moving", weight: 6, patterns: [/\b(moving|movers)\b/] },
+  { tag: "housing_support", sub: "tenant", weight: 22, patterns: [/\b(landlord|heating|heat not working|maintenance issue|not fixing|unsafe housing|broken heater|apartment problem)\b/]},
 
   // ===== TRANSPORT =====
   { tag: "transport_support", sub: "shuttle", weight: 8, patterns: [/\b(shuttle)\b/] },
