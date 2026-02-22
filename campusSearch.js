@@ -3,9 +3,16 @@ console.log("campusSearch.js loaded");
 window.CAMPUS_DIRECTORY = {
   "rutgers_nb": {
     displayName: "Rutgers University – New Brunswick",
+    abbr: ["nb", "rutgers"],
     themeColor: "#cc0033", 
     logo: "🛡️", 
     bgImage: "url('https://path-to-your-rutgers-shield.png')", 
+  },
+  "rutgers_nk": { 
+    displayName: "Rutgers University – Newark",
+    abbr: ["nk", "newark"],
+    themeColor: "#cc0033",
+    logo: "🧱" 
   },
   "nyu": {
     displayName: "New York University",
@@ -48,7 +55,11 @@ window.confirmCampusSearch = function confirmCampusSearch() {
   const matches = Object.entries(dir).filter(([key, campus]) => {
     const name = (campus.displayName || "").toLowerCase();
     const searchKey = key.toLowerCase();
-    return name.includes(keyword) || searchKey.includes(keyword);
+    
+   
+    return name.includes(keyword) || 
+           searchKey.includes(keyword) || 
+           (campus.abbr && campus.abbr.includes(keyword)); // 增加缩写匹配
 });
   
   if (!matches.length) {
@@ -117,4 +128,28 @@ window.renderCampusHint = function renderCampusHint() {
     }
   }
 };
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+        const input = document.getElementById("campusSearch");
+        if (input) {
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    window.confirmCampusSearch();
+                }
+            });
+        }
+    });
+} else {
+    const input = document.getElementById("campusSearch");
+    if (input) {
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                window.confirmCampusSearch();
+            }
+        });
+    }
+}
 
