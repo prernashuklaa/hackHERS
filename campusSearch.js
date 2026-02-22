@@ -1,102 +1,118 @@
 console.log("campusSearch.js loaded");
 
-window.CAMPUS_DIRECTORY = {
-  "rutgers_nb": {
-    displayName: "Rutgers University – New Brunswick",
-    abbr: ["nb", "rutgers"],
-    themeColor: "#cc0033", 
-    logo: "🛡️", 
-    bgImage: "url('https://path-to-your-rutgers-shield.png')", 
-  },
-  "rutgers_nk": { 
-    displayName: "Rutgers University – Newark",
-    abbr: ["nk", "newark"],
+// Keep theme/logo data separate — DO NOT overwrite CAMPUS_DIRECTORY from campuses.js
+window.CAMPUS_META = window.CAMPUS_META || {
+  rutgers_nb: {
     themeColor: "#cc0033",
-    logo: "🧱" 
+    logo: "🛡️",
+    abbr: ["nb", "rutgers", "new brunswick"],
   },
-  "nyu": {
-    displayName: "New York University",
-    themeColor: "#57068c", 
-    logo: "🗽", 
-    bgImage: "url('https://path-to-your-nyu-logo.png')",
-  }
+  rutgers_nk: {
+    themeColor: "#cc0033",
+    logo: "🧱",
+    abbr: ["nk", "newark", "rutgers newark"],
+  },
+  nyu: {
+    themeColor: "#57068c",
+    logo: "🗽",
+    abbr: ["nyu", "new york", "new york university"],
+  },
 };
 
-
 window.customCampusName = window.customCampusName || "";
+
+// Small normalizer so searching works even with — vs – vs -
+function norm(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/[\u2013\u2014]/g, "-") // normalize en/em dash to hyphen
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 window.confirmCampusSearch = function confirmCampusSearch() {
   const input = document.getElementById("campusSearch");
   const select = document.getElementById("campusSelect");
   const hintEl = document.getElementById("campusHint");
-  if (!window.CAMPUS_DIRECTORY) {
-    console.error("Error: CAMPUS_DIRECTORY not found. Ensure campuses.js is loaded before this script.");
-    if (hintEl) hintEl.textContent = "Error: Database not loaded. Please refresh.";
+
+  const dir = window.CAMPUS_DIRECTORY; // comes from campuses.js (resources live here)
+  const meta = window.CAMPUS_META || {};
+
+  if (!dir) {
+    console.error("Error: CAMPUS_DIRECTORY not found. Ensure campuses.js is loaded before campusSearch.js.");
+    if (hintEl) hintEl.textContent = "Error: campus database not loaded. Please refresh.";
     return;
   }
-  
-  const dir = window.CAMPUS_DIRECTORY;
-  
-  if (!dir || !select || !hintEl) return;
+  if (!select || !hintEl) return;
 
-  const keyword = (input?.value || "").trim().toLowerCase();
+  const keywordRaw = (input?.value || "").trim();
+  const keyword = norm(keywordRaw);
 
   hintEl.classList.remove("no-results-active");
-  // Reset dropdown
+
+  // Reset dropdown to ALL campuses (not just matches) — optional, but safer UX:
+  // If you want it to show only matches, keep it as is (we do only matches below).
   select.innerHTML = `<option value="">No campus selected</option>`;
   window.customCampusName = "";
 
-  hintEl.classList.remove("no-results-active");
   if (!keyword) {
     hintEl.textContent = "Please enter a school name to search.";
     return;
   }
 
-  const matches = Object.entries(dir).filter(([key, campus]) => {
-    const name = (campus.displayName || "").toLowerCase();
-    const searchKey = key.toLowerCase();
-    
-   
-    return name.includes(keyword) || 
-           searchKey.includes(keyword) || 
-           (campus.abbr && campus.abbr.includes(keyword)); // 增加缩写匹配
-});
-  
-  if (!matches.length) {
-    hintEl.textContent = `No schools found matching “${input.value}”.`;
-    window.customCampusName = input.value;
+  const entries = Object.entries(dir);
 
-    void hintEl.offsetWidth; 
+  const matches = entries.filter(([key, campus]) => {
+    const displayName = norm(campus?.displayName || "");
+    const keyNorm = norm(key);
+
+    const abbr = (meta[key]?.abbr || []).map(norm);
+
+    return (
+      displayName.includes(keyword) ||
+      keyNorm.includes(keyword) ||
+      abbr.some((a) => a.includes(keyword) || keyword.includes(a))
+    );
+  });
+
+  if (!matches.length) {
+    hintEl.textContent = `No schools found matching “${keywordRaw}”.`;
+    window.customCampusName = keywordRaw;
+
+    // trigger CSS animation if you have one
+    void hintEl.offsetWidth;
     hintEl.classList.add("no-results-active");
     return;
   }
 
+  // Populate dropdown with matches (value MUST be the key)
   matches.forEach(([key, campus]) => {
     const option = document.createElement("option");
-    option.value = key;
-    option.textContent = campus.displayName;
+    option.value = key; // IMPORTANT: keep key, so script.js can find resources
+    option.textContent = campus.displayName || key;
     select.appendChild(option);
   });
 
   hintEl.textContent = `Found ${matches.length} school(s). Please select one above.`;
-  
-  if (matches.length > 0) {
-    select.value = matches[0][0]; 
-    window.renderCampusHint();    
-  }
-}; 
+
+  // Auto-select first match for convenience
+  select.value = matches[0][0];
+  window.renderCampusHint();
+};
 
 window.renderCampusHint = function renderCampusHint() {
   const hintEl = document.getElementById("campusHint");
   const selectEl = document.getElementById("campusSelect");
-  const logoMark = document.querySelector(".logoMark"); // 获取 LOGO 图标位置
+  const logoMark = document.querySelector(".logoMark");
   const body = document.body;
 
   if (!hintEl || !selectEl) return;
 
-  const campusKey = selectEl.value;
+  const campusKey = (selectEl.value || "").trim();
   const dir = window.CAMPUS_DIRECTORY || {};
+  const meta = window.CAMPUS_META || {};
   const campusData = dir[campusKey];
+  const campusMeta = meta[campusKey];
 
   let mascotEl = document.getElementById("mascot-overlay");
   if (!mascotEl) {
@@ -107,17 +123,20 @@ window.renderCampusHint = function renderCampusHint() {
 
   if (campusKey && campusData) {
     hintEl.textContent = `Showing on-campus options for ${campusData.displayName}.`;
-    
-    document.documentElement.style.setProperty('--primary', campusData.themeColor);
-    document.documentElement.style.setProperty('--primary2', campusData.themeColor + "dd"); 
-    
-    if (logoMark) logoMark.textContent = campusData.logo; 
-    mascotEl.textContent = campusData.logo;
-    mascotEl.style.opacity = "0.08"; 
 
+    if (campusMeta?.themeColor) {
+      document.documentElement.style.setProperty("--primary", campusMeta.themeColor);
+      document.documentElement.style.setProperty("--primary2", campusMeta.themeColor + "dd");
+    }
+
+    const icon = campusMeta?.logo || "🎓";
+    if (logoMark) logoMark.textContent = icon;
+    mascotEl.textContent = icon;
+    mascotEl.style.opacity = "0.08";
   } else {
-    document.documentElement.style.removeProperty('--primary');
-    document.documentElement.style.removeProperty('--primary2');
+    document.documentElement.style.removeProperty("--primary");
+    document.documentElement.style.removeProperty("--primary2");
+
     if (logoMark) logoMark.textContent = "🎓";
     if (mascotEl) mascotEl.style.opacity = "0";
 
@@ -129,27 +148,20 @@ window.renderCampusHint = function renderCampusHint() {
   }
 };
 
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-        const input = document.getElementById("campusSearch");
-        if (input) {
-            input.addEventListener("keydown", (e) => {
-                if (e.key === "Enter") {
-                    e.preventDefault();
-                    window.confirmCampusSearch();
-                }
-            });
-        }
-    });
-} else {
-    const input = document.getElementById("campusSearch");
-    if (input) {
-        input.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                window.confirmCampusSearch();
-            }
-        });
+// Enter-to-search
+function wireCampusSearchEnter() {
+  const input = document.getElementById("campusSearch");
+  if (!input) return;
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      window.confirmCampusSearch();
     }
+  });
 }
 
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", wireCampusSearchEnter);
+} else {
+  wireCampusSearchEnter();
+}
