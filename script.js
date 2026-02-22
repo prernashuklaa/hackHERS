@@ -623,12 +623,61 @@ function buildOutsideResources(intents, geo) {
     const label = def?.label || `${it.tag.replaceAll("_", " ")} (${it.sub})`;
     const query = def?.mapsQuery || "student support services near me";
 
+   function makeFriendlyNote(tag, sub, geo) {
+  const locationText = geo
+    ? "Shows options near your current location."
+    : "Shows options near you.";
+
+  switch (tag) {
+    case "academic_support":
+      return `Find tutoring centers, study spaces, or academic help nearby. ${locationText}`;
+
+    case "health_support":
+      return `Locate clinics, testing centers, or medical support close to you. ${locationText}`;
+
+    case "mental_health":
+      return `Find counseling services or support centers in your area. ${locationText}`;
+
+    case "food_support":
+      return `Browse nearby food options based on what you need. ${locationText}`;
+
+    case "career_support":
+      return `Discover career centers, resume help, or interview prep nearby. ${locationText}`;
+
+    case "financial_support":
+      return `See financial aid or assistance resources in your area. ${locationText}`;
+
+    case "housing_support":
+      return `Explore housing or renter-support resources near you. ${locationText}`;
+
+    case "transport_support":
+      return `View transportation options and transit resources nearby. ${locationText}`;
+
+    case "identity_support":
+      return `Find community or cultural support centers in your area. ${locationText}`;
+
+    case "legal_support":
+      return `Locate legal or administrative help close to you. ${locationText}`;
+
+    case "recreation_support":
+      return `Discover recreation, fitness, or things to do nearby. ${locationText}`;
+
+    case "tech_support":
+      return `Find IT help, printing services, or repair options nearby. ${locationText}`;
+
+    case "community_support":
+      return `Explore social groups, events, or community spaces near you. ${locationText}`;
+
+    default:
+      return `View relevant support options nearby. ${locationText}`;
+  }
+}
     return {
-      name: `Nearby: ${label}`,
-      type: "Google Maps",
-      notes: "Opens map results based on what you typed.",
-      links: [{ label: "Open map results", url: makeMapsUrl(query, geo) }],
-    };
+  name: `Nearby: ${label}`,
+  type: "Google Maps",
+  notes: makeFriendlyNote(it.tag, it.sub, geo),
+  links: [{ label: "View nearby options", url: makeMapsUrl(query, geo) }],
+};
   });
 }
 
