@@ -23,7 +23,7 @@
       <div class="nav">
         <a class="navLink" href="index.html">Home</a>
         <a class="navLink" href="emergency.html">Emergency</a>
-        <a class="navLink" href="about.html">About</a>
+        <a class="navLink navActive" href="about.html">About</a>
 
         <button class="themeToggle" id="themeToggle" type="button" onclick="toggleTheme()">
           <span class="toggleIcon" aria-hidden="true">🌙</span>
@@ -32,106 +32,163 @@
       </div>
     </div>
 
-    <div class="grid" style="grid-template-columns: 1fr;">
+    <div class="grid aboutGrid">
       <div class="panel panel-main">
-        <h2>About</h2>
+        <h2>About Compass</h2>
+
         <p class="muted">
           Compass helps students find the right support when multiple problems happen at once — academics, health, wellness, and logistics.
         </p>
 
-        <div class="card" style="margin-top:14px;">
-          <h3>👥 Team</h3>
-          <ul class="steps">
-            <li><strong>Prerna</strong></li>
-            <li><strong>Evalyn</strong></li>
-            <li><strong>Ahin</strong></li>
-          </ul>
+        <div class="aboutChips">
+          <div class="tag">Multi-issue aware</div>
+          <div class="tag">Campus-adaptive</div>
+          <div class="tag">Plain-language friendly</div>
+          <div class="tag">Fast next steps</div>
         </div>
 
+        <!-- TEAM -->
+        <div class="card" style="margin-top:14px;">
+          <h3>👥 Team</h3>
+
+          <div class="teamGrid">
+            <div class="teamCard">
+              <div class="avatar">P</div>
+              <div>
+                <div class="teamName">Prerna</div>
+                <div class="muted teamRole">Product + Frontend</div>
+              </div>
+            </div>
+
+            <div class="teamCard">
+              <div class="avatar">E</div>
+              <div>
+                <div class="teamName">Evalyn</div>
+                <div class="muted teamRole">UX + Research</div>
+              </div>
+            </div>
+
+            <div class="teamCard">
+              <div class="avatar">A</div>
+              <div>
+                <div class="teamName">Ahin</div>
+                <div class="muted teamRole">Logic + Data</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STORY -->
         <div class="card" style="margin-top:14px;">
           <h3>💡 The Story Behind Compass</h3>
+
           <p>
             Compass was created from a simple observation: students rarely struggle with just one thing at a time.
           </p>
+
           <p>
-            You might be doing poorly on an exam, feeling sick, worrying about money, navigating a new relationship,
-            and trying to figure out bus schedules — all in the same week. When that happens, most support systems
-            don’t feel designed for real life. University websites are siloed. Health services are separate from academic
-            support. Campus offices live in different parts of the internet. Students are forced to know exactly what
-            category their problem fits into before they can even start looking for help.
+            You might be doing poorly on an exam, feeling sick, worrying about money, navigating a new relationship, and trying
+            to figure out bus schedules — all in the same week. When that happens, most support systems don’t feel designed
+            for real life. University websites are siloed. Health services are separate from academic support. Campus offices
+            live in different parts of the internet. Students are forced to know exactly what category their problem fits into
+            before they can even start looking for help.
           </p>
-          <p>
-            But that’s not how stress works.
-          </p>
+
+          <p><strong>But that’s not how stress works.</strong></p>
+
           <p>
             When someone types, “I’m falling behind in class and my ankle is injured and I need STI testing,” they aren’t
             thinking in categories. They’re thinking in overwhelm.
           </p>
+
           <p>
-            Compass was designed to respond the way a human support advisor might — by recognizing multiple needs at once
-            and pointing students to all relevant resources in one place.
+            Compass was designed to respond the way a human support advisor might — by recognizing multiple needs at once and
+            pointing students to all relevant resources in one place.
           </p>
 
-          <h3 style="margin-top:14px;">🧠 The Core Idea</h3>
+          <hr class="aboutDivider" />
+
+          <h3>🧠 The Core Idea</h3>
+
           <p>
             Instead of making students navigate menus and drop-downs, Compass lets them describe what’s going on in plain language.
             The system then:
           </p>
-          <ul class="steps">
+
+          <ul class="aboutList">
             <li>Detects multiple support categories from one prompt</li>
             <li>Scores and ranks relevant intents</li>
             <li>Returns campus-specific resources when a school is selected</li>
             <li>Suggests nearby off-campus help when appropriate</li>
             <li>Preserves chats so students can revisit guidance later</li>
           </ul>
+
           <p>
-            Compass doesn’t replace counselors, advisors, or campus services. It makes them easier to find — especially in moments when clarity is hard.
+            Compass doesn’t replace counselors, advisors, or campus services. It makes them easier to find — especially in moments
+            when clarity is hard.
           </p>
 
-          <h3 style="margin-top:14px;">🎯 The Problem We Wanted to Solve</h3>
-          <p>We noticed that:</p>
-          <ul class="steps">
+          <hr class="aboutDivider" />
+
+          <h3>🎯 The Problem We Wanted to Solve</h3>
+          <ul class="aboutList">
             <li>Students don’t always know which office handles their issue</li>
             <li>Many problems overlap (academic + mental health + logistics)</li>
             <li>Searching campus websites can be overwhelming</li>
             <li>Students often delay seeking help because the process feels complicated</li>
           </ul>
+
           <p>
-            Compass reduces friction. Instead of asking, “Which department do you need?” it asks, “What’s going on?”
+            Compass reduces friction. Instead of asking “Which department do you need?” it asks: <strong>“What’s going on?”</strong>
           </p>
 
-          <h3 style="margin-top:14px;">🌱 What Makes Compass Different</h3>
+          <hr class="aboutDivider" />
+
+          <h3>🌱 What Makes Compass Different</h3>
           <p>
-            Most support tools assume a single issue. Compass is intentionally built to detect multiple themes from one input and provide diverse recommendations.
-          </p>
-          <ul class="steps">
-            <li>Multi-issue aware</li>
-            <li>Campus-adaptive</li>
-            <li>Plain-language friendly</li>
-            <li>Lightweight and accessible</li>
-            <li>Designed with student stress patterns in mind</li>
-          </ul>
-          <p>
-            The goal is not just to link resources — but to meet students in the messy middle of their real experiences.
+            Most support tools assume a single issue. Compass is intentionally built to detect multiple themes from one input and provide
+            diverse recommendations.
           </p>
 
-          <h3 style="margin-top:14px;">🔮 Looking Forward</h3>
-          <p>Compass could eventually evolve to:</p>
-          <ul class="steps">
+          <div class="aboutFeatureGrid">
+            <div class="aboutFeature">
+              <div class="aboutFeatureTitle">Multi-issue aware</div>
+              <div class="muted">One prompt can return multiple categories.</div>
+            </div>
+            <div class="aboutFeature">
+              <div class="aboutFeatureTitle">Campus-adaptive</div>
+              <div class="muted">Shows on-campus offices when a campus is selected.</div>
+            </div>
+            <div class="aboutFeature">
+              <div class="aboutFeatureTitle">Low-friction</div>
+              <div class="muted">Students don’t need to know the “right” label first.</div>
+            </div>
+            <div class="aboutFeature">
+              <div class="aboutFeatureTitle">Saved guidance</div>
+              <div class="muted">Chats are saved and clickable to reopen later.</div>
+            </div>
+          </div>
+
+          <hr class="aboutDivider" />
+
+          <h3>🔮 Looking Forward</h3>
+          <ul class="aboutList">
             <li>Integrate directly with campus APIs</li>
             <li>Show real-time office hours and availability</li>
             <li>Offer appointment booking</li>
             <li>Personalize based on student status</li>
             <li>Provide anonymous usage analytics to improve campus support systems</li>
           </ul>
+
           <p>
             At its core, Compass is about direction — not diagnosis. When everything feels scattered, Compass helps you take the next step.
           </p>
         </div>
 
+        <!-- TECH -->
         <div class="card" style="margin-top:14px;">
           <h3>🛠 Technologies</h3>
-          <ul class="steps">
+          <ul class="aboutList">
             <li><strong>HTML/CSS</strong> — layout, styling, calm theme + dark mode</li>
             <li><strong>Vanilla JavaScript</strong> — intent detection + scoring + rendering</li>
             <li><strong>LocalStorage</strong> — saved chats that can be reopened</li>
@@ -144,7 +201,7 @@
     </div>
   </div>
 
-  <!-- Theme toggle + styling consistency -->
+  <!-- Keep theme toggle consistent across pages -->
   <script src="script.js" defer></script>
 </body>
 </html>
