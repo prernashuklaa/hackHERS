@@ -260,6 +260,8 @@ const MATCH_RULES = [
   { tag: "food_support", sub: "grocery", weight: 9, patterns: [/\b(grocer(y|ies)|grocery store|supermarket)\b/] },
   { tag: "food_support", sub: "pantry", weight: 11, patterns: [/\b(food pantry|pantry|free groceries)\b/] },
   { tag: "food_support", sub: "free_meals", weight: 11, patterns: [/\b(free food|free meals|community meal)\b/] },
+  { tag: "food_support", sub: "pantry", weight: 22, patterns: [/\b(haven't eaten|havent eaten|no food|can't afford food|cant afford food)\b/] },
+{ tag: "food_support", sub: "cheap", weight: 20, patterns: [/\b(broke|no money for food)\b/] },
 
   // ===== HEALTH =====
   { tag: "health_support", sub: "urgent", weight: 13, patterns: [/\b(chest pain|can'?t breathe|difficulty breathing|severe pain|fainting|blood)\b/] },
