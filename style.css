@@ -432,3 +432,121 @@ button:not(.smallBtn):hover {
   background-clip: text !important;
   color: transparent !important;
 }
+/* ============================
+   ABOUT PAGE POLISH (DROP-IN)
+   ============================ */
+
+.aboutGrid {
+  grid-template-columns: 1fr;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.aboutChips {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.aboutDivider {
+  border: none;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  margin: 18px 0;
+}
+
+[data-theme="dark"] .aboutDivider {
+  border-top: 1px solid rgba(255,255,255,0.12);
+}
+
+/* Team section */
+.teamGrid {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.teamCard {
+  padding: 16px 18px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 210px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+  background: rgba(255,255,255,0.72);
+}
+
+[data-theme="dark"] .teamCard {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7a8cff, #b9a6ff);
+  color: white;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.teamName {
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.1;
+}
+
+.teamRole {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* About lists look nicer than default UL */
+.aboutList {
+  margin-top: 10px;
+  padding-left: 18px;
+}
+
+.aboutList li {
+  margin: 8px 0;
+  line-height: 1.55;
+}
+
+/* Feature grid */
+.aboutFeatureGrid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .aboutFeatureGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.aboutFeature {
+  padding: 14px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.72);
+}
+
+[data-theme="dark"] .aboutFeature {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.aboutFeatureTitle {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
