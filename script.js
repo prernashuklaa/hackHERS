@@ -943,6 +943,25 @@ function buildNextSteps(intents, ctx) {
       also: [],
     };
   }
+  const scenario = detectScenario(ctx.rawText);
+
+if (scenario === "overload") {
+  return {
+    now: [
+      "Open your calendar and block 30 minutes labeled 'stabilize week.'",
+      "Choose ONE task to complete today. Not two. Not three.",
+      "Text one person and cancel or postpone one non-essential commitment."
+    ],
+    next: [
+      "List everything on your mind — then circle only what must happen in 48 hours.",
+      "Batch small life tasks (laundry + errands) into one time block."
+    ],
+    also: [
+      "Exhaustion makes everything feel urgent — reducing inputs restores clarity.",
+      "If this feeling persists, consider wellness support."
+    ]
+  };
+}
 const ranked = [...intents].sort((a, b) => {
   const aScore = (a.score || 0)
     + urgencyBoost(a)
