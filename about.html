@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Compass — About</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <h1 class="logo">
+          <span class="logoMark" aria-hidden="true">🧭</span>
+          <span class="logoText">Compass</span>
+        </h1>
+        <p class="subtitle">Student support, quickly — with campus-aware guidance.</p>
+      </div>
+
+      <div class="nav">
+        <a class="navLink" href="index.html">Home</a>
+        <a class="navLink" href="emergency.html">Emergency</a>
+        <a class="navLink" href="about.html">About</a>
+
+        <button class="themeToggle" id="themeToggle" type="button" onclick="toggleTheme()">
+          <span class="toggleIcon" aria-hidden="true">🌙</span>
+          <span class="toggleText">Dark</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns: 1fr;">
+      <div class="panel panel-main">
+        <h2>About</h2>
+        <p class="muted">
+          Compass helps students find the right support when multiple problems happen at once — academics, health, wellness, and logistics.
+        </p>
+
+        <div class="card" style="margin-top:14px;">
+          <h3>👥 Team</h3>
+          <ul class="steps">
+            <li><strong>Your Name 1</strong> — role (ex: frontend, UX, logic)</li>
+            <li><strong>Your Name 2</strong> — role</li>
+            <li><strong>Your Name 3</strong> — role</li>
+          </ul>
+        </div>
+
+        <div class="card" style="margin-top:14px;">
+          <h3>💡 Why we built Compass</h3>
+          <p>
+            Students often don’t have just one problem at a time. Compass is designed to read a real, messy prompt and return
+            multiple relevant support options — including campus offices when a campus is selected — plus nearby off-campus help.
+          </p>
+        </div>
+
+        <div class="card" style="margin-top:14px;">
+          <h3>🛠 Technologies</h3>
+          <ul class="steps">
+            <li><strong>HTML/CSS</strong> — layout, styling, calm theme + dark mode</li>
+            <li><strong>Vanilla JavaScript</strong> — intent detection + scoring + rendering</li>
+            <li><strong>LocalStorage</strong> — saved chats that can be reopened</li>
+            <li><strong>Geolocation API</strong> — improves nearby recommendations (optional)</li>
+            <li><strong>Google Maps links</strong> — quick access to real nearby services</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Keep theme toggle consistent across pages -->
+  <script src="script.js" defer></script>
+</body>
+</html>
