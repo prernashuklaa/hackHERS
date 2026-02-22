@@ -355,10 +355,13 @@ const MATCH_RULES = [
 { tag: "mental_health", sub: "default", weight: 18, patterns: [/\b(stressed|stress|burnt out|burned out|overwhelmed|too much|pressure)\b/] },
 
 // Depression / low mood
-{ tag: "mental_health", sub: "default", weight: 22, patterns: [/\b(depressed|depression|hopeless|empty|numb|worthless|no motivation|unmotivated)\b/] },
-{ tag: "mental_health", sub: "default", weight: 18, patterns: [/\b(sad|down|low|miserable|exhausted emotionally)\b/] },
-{ tag: "mental_health", sub: "therapy", weight: 22, patterns: [/\b(depressed|depression|hopeless|empty|numb|worthless)\b/] },
-{ tag: "mental_health", sub: "therapy", weight: 18, patterns: [/\b(sad|down|low|crying)\b/] },
+// Depression / low mood -> PUSH to therapy
+{ tag: "mental_health", sub: "therapy", weight: 30, patterns: [/\b(depressed|depression|hopeless|empty|numb|worthless|no motivation|unmotivated)\b/] },
+{ tag: "mental_health", sub: "therapy", weight: 26, patterns: [/\b(sad|down|miserable|crying|can't stop crying|cant stop crying)\b/] },
+
+// Still keep a weaker "default" bucket for general mood
+{ tag: "mental_health", sub: "default", weight: 12, patterns: [/\b(feeling off|not myself|mentally exhausted|emotionally drained)\b/] },
+{ tag: "mental_health", sub: "therapy", weight: 24, patterns: [/\b(sad(ness)?|down|depress(ed|ing|ion)?|blue)\b/] },
 // Loneliness / social isolation (often mental-health related)
 { tag: "mental_health", sub: "default", weight: 16, patterns: [/\b(lonely|alone|isolated|no friends|no one to talk to|left out)\b/] },
 
@@ -429,48 +432,36 @@ function detectIntents(text) {
   return ranked;
 }
 
+// ---------- Campus matching ----------
 function resourceMatchesIntent(resource, intent) {
-  // If the resource has structured intents
+  // If the resource has structured intents (your campuses.js uses this)
   if (Array.isArray(resource.intents)) {
     // 1) Exact match
-    const exact = resource.intents.some((it) => it?.tag === intent.tag && it?.sub === intent.sub);
-    if (exact) return true;
+    if (resource.intents.some((it) => it?.tag === intent.tag && it?.sub === intent.sub)) {
+      return true;
+    }
 
-    // 2) IMPORTANT: If user intent is "default", allow ANY resource with same tag to match.
-    // Example: user -> mental_health::default should match campus resource mental_health::therapy
+    // 2) If user intent is "default", match any resource with same tag
+    // mental_health::default should match campus mental_health::therapy
     if (intent.sub === "default") {
       return resource.intents.some((it) => it?.tag === intent.tag);
     }
 
-    // 3) Also helpful: if resource intent is "default", let it match any sub-intent under that tag
-    // Example: resource mental_health::default matches user mental_health::therapy
+    // 3) If resource is "default", match any sub-intent under that tag
     return resource.intents.some((it) => it?.tag === intent.tag && it?.sub === "default");
   }
 
-  // Backward-compatible tag-only matching
+  // Fallback if you ever use tags/subTags format
   const tags = Array.isArray(resource.tags) ? resource.tags : [];
   if (!tags.includes(intent.tag)) return false;
 
-  // If user intent is default, tag match is enough
   if (intent.sub === "default") return true;
-
-  const subTags = Array.isArray(resource.subTags) ? resource.subTags : [];
-  if (subTags.length) return subTags.includes(intent.sub);
-
-  return true;
-}
-
-  // Backward-compatible: tags only
-  const tags = Array.isArray(resource.tags) ? resource.tags : [];
-  if (!tags.includes(intent.tag)) return false;
 
   const subTags = Array.isArray(resource.subTags) ? resource.subTags : [];
   if (!subTags.length) return true;
-  if (intent.sub === "default") return true;
 
   return subTags.includes(intent.sub);
 }
-
 function buildCampusRecommendations(campusKey, intents) {
   const dir = getCampusDirectory();
   const campus = dir[campusKey];
