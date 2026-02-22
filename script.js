@@ -848,7 +848,7 @@ window.analyze = async function analyze() {
 
   const header = `
     <div class="chatItem">
-      <strong>Finding the right support…</strong>
+      <strong>You’re not alone — let’s find the right support.</strong>
       <p class="muted">Results are based on what you typed (food/health/fun route correctly + campus works).</p>
       ${geo ? `<div class="tag">Location enabled</div>` : `<div class="tag">Location not shared</div>`}
       <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">
@@ -881,7 +881,7 @@ window.analyze = async function analyze() {
 
   const html = header + campusBlock + outsideBlock + disclaimer;
   outputEl.innerHTML = html;
-
+  outputEl.scrollIntoView({ behavior: "smooth", block: "start" });
   // Save chat
   const now = new Date();
   const chats = loadChats();
@@ -905,8 +905,26 @@ window.clearInput = function clearInput() {
   if (outputEl) outputEl.innerHTML = "";
 };
 
-// ---------- Boot ----------
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
   renderChatHistory();
+
+  // Warm empty state (only if output is empty)
+  const outputEl = document.getElementById("output");
+  if (outputEl && !outputEl.innerHTML.trim()) {
+    outputEl.innerHTML = `
+      <div class="chatItem">
+        <strong>How can Compass help today?</strong>
+        <p class="muted" style="margin-top:6px;">
+          Try something like:
+        </p>
+        <ul class="muted" style="margin-top:6px; margin-left:18px;">
+          <li>“I’m stressed and falling behind in class.”</li>
+          <li>“I need cheap food near campus.”</li>
+          <li>“I’m feeling lonely and want to meet people.”</li>
+          <li>“I need tutoring and I feel overwhelmed.”</li>
+        </ul>
+      </div>
+    `;
+  }
 });
