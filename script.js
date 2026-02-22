@@ -430,13 +430,12 @@ function detectIntents(text) {
   if (scores.size === 0) {
     return [{ tag: "community_support", sub: "default", keyword: "" }];
   }
-
-  // Sort by score desc and pick top 2 (keeps results focused)
-  const ranked = [...scores.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 2)
-    .map(([key]) => hits.get(key))
-    .filter(Boolean);
+// Sort by score desc and pick top 4 (multi-issue support)
+const ranked = [...scores.entries()]
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 4)
+  .map(([key]) => hits.get(key))
+  .filter(Boolean);
 
   // Safety: if crisis was detected, only return crisis
   const crisisHit = ranked.find((r) => r.tag === "crisis");
