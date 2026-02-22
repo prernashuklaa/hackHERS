@@ -432,7 +432,7 @@ function detectIntents(text) {
   const t = normalizeText(text);
 
   const scores = new Map(); // key -> score
-  const hits = new Map(); // key -> {tag,sub,keyword}
+  const hits = new Map();   // key -> {tag,sub,keyword}
 
   for (const rule of MATCH_RULES) {
     if (rule.phrases) {
@@ -461,18 +461,42 @@ function detectIntents(text) {
   if (scores.size === 0) {
     return [{ tag: "community_support", sub: "default", keyword: "" }];
   }
-// Sort by score desc and pick top 4 (multi-issue support)
-const ranked = [...scores.entries()]
-  .sort((a, b) => b[1] - a[1])
-  .slice(0, 4)
-  .map(([key]) => hits.get(key))
-  .filter(Boolean);
+
+  // Turn into ranked list
+  const rankedPairs = [...scores.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([key, score]) => {
+      const hit = hits.get(key);
+      return hit ? { ...hit, score, key } : null;
+    })
+    .filter(Boolean);
 
   // Safety: if crisis was detected, only return crisis
-  const crisisHit = ranked.find((r) => r.tag === "crisis");
+  const crisisHit = rankedPairs.find((r) => r.tag === "crisis");
   if (crisisHit) return [crisisHit];
 
-  return ranked;
+  // Pick up to 4, preferring DIFFERENT TAGS first
+  const picked = [];
+  const usedTags = new Set();
+
+  for (const r of rankedPairs) {
+    if (!usedTags.has(r.tag)) {
+      picked.push({ tag: r.tag, sub: r.sub, keyword: r.keyword });
+      usedTags.add(r.tag);
+    }
+    if (picked.length >= 4) break;
+  }
+
+  // If still fewer than 4, fill remaining (can repeat tags if needed)
+  if (picked.length < 4) {
+    for (const r of rankedPairs) {
+      if (picked.some((x) => x.tag === r.tag && x.sub === r.sub)) continue;
+      picked.push({ tag: r.tag, sub: r.sub, keyword: r.keyword });
+      if (picked.length >= 4) break;
+    }
+  }
+
+  return picked;
 }
 
 // ---------- Campus matching ----------
