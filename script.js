@@ -269,7 +269,12 @@ const MATCH_RULES = [
   { tag: "health_support", sub: "womens", weight: 10, patterns: [/\b(women'?s health|gynecolog(y|ist)|obgyn)\b/] },
   { tag: "health_support", sub: "vaccines", weight: 9, patterns: [/\b(vaccine|vaccination|immunization)\b/] },
   { tag: "health_support", sub: "telehealth", weight: 9, patterns: [/\b(telehealth|virtual doctor|online appointment)\b/] },
+// ===== Sexual health =====
+{ tag: "health_support", sub: "sti", weight: 26,
+  patterns: [/\b(std|sti|std test|sti test|testing|chlamydia|gonorrhea|hiv|pregnancy test)\b/] },
 
+{ tag: "health_support", sub: "primary", weight: 22,
+  patterns: [/\b(sexual health|sexual issue|sexual problem|pain during sex|painful sex|birth control|contraception)\b/] },
   // ===== FUN / THINGS TO DO =====
   { tag: "recreation_support", sub: "default", weight: 12, patterns: [/\b(what to do|things to do|fun|bored|hang out|near campus)\b/] },
   { tag: "community_support", sub: "events", weight: 11, patterns: [/\b(events?|concert|show|festival|tonight|weekend)\b/] },
@@ -344,7 +349,15 @@ const MATCH_RULES = [
   // ===== CRISIS (Emergency tab handles real callouts; still detect) =====
   { tag: "crisis", sub: "default", weight: 100, patterns: [/\b(kill myself|suicidal|self harm|self-harm)\b/] },
   // ===== MENTAL HEALTH (EXPANDED) =====
+// ===== COMPANIONSHIP / LONELINESS =====
+{ tag: "mental_health", sub: "loneliness", weight: 24,
+  patterns: [/\b(companionship|need company|want company|someone to talk to|need someone to talk to)\b/] },
 
+{ tag: "mental_health", sub: "loneliness", weight: 22,
+  patterns: [/\b(lonely|alone|isolated|no friends|left out)\b/] },
+
+{ tag: "community_support", sub: "clubs", weight: 14,
+  patterns: [/\b(make friends|meet people|new friends)\b/] },
 // High-confidence crisis-ish words (still not “Emergency tab” level unless you want it)
 // NOTE: Your “crisis” rule already catches self-harm; keep that separate.
 { tag: "mental_health", sub: "default", weight: 25, patterns: [/\b(panic attack|panicking|i'?m panicking|hyperventilat(e|ing)|can'?t calm down)\b/] },
