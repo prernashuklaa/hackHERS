@@ -922,7 +922,8 @@ function detectScenario(rawText) {
   return "general";
 }
 function buildNextSteps(intents, ctx) {
-    const scenario = detectScenario(ctx.rawText);
+  const scenario = detectScenario(ctx.rawText);
+
   // Crisis override
   if (intents.some((i) => i.tag === "crisis")) {
     return {
@@ -935,32 +936,24 @@ function buildNextSteps(intents, ctx) {
     };
   }
 
-let overloadModifier = null;
+  let overloadModifier = null;
+  if (scenario === "overload") {
+    overloadModifier = {
+      now: [
+        "Open your calendar and block 30 minutes labeled 'stabilize week.'",
+        "Choose ONE task to complete today. Not two. Not three.",
+      ],
+      also: ["Exhaustion makes everything feel urgent — reducing inputs restores clarity."],
+    };
+  }
 
-if (scenario === "overload") {
-  overloadModifier = {
-    now: [
-      "Open your calendar and block 30 minutes labeled 'stabilize week.'",
-      "Choose ONE task to complete today. Not two. Not three."
-    ],
-    also: [
-      "Exhaustion makes everything feel urgent — reducing inputs restores clarity."
-    ]
-  };
-}
-  
-const ranked = [...intents].sort((a, b) => {
-  const aScore = (a.score || 0)
-    + urgencyBoost(a)
-    + situationalBoost(a, ctx.rawText);
+  const ranked = [...intents].sort((a, b) => {
+    const aScore = (a.score || 0) + urgencyBoost(a) + situationalBoost(a, ctx.rawText);
+    const bScore = (b.score || 0) + urgencyBoost(b) + situationalBoost(b, ctx.rawText);
+    return bScore - aScore;
+  });
 
-  const bScore = (b.score || 0)
-    + urgencyBoost(b)
-    + situationalBoost(b, ctx.rawText);
-
-  return bScore - aScore;
-});
-  // 1) Prefer distinct tags first (so one category doesn't dominate)
+  // 1) Prefer distinct tags first
   const distinct = [];
   const usedTags = new Set();
 
@@ -972,9 +965,9 @@ const ranked = [...intents].sort((a, b) => {
     if (distinct.length >= 3) break;
   }
 
-  // If fewer than 3 distinct tags, fill from remaining
+  // If fewer than 3 distinct tags, fill remaining
   if (distinct.length < 3) {
-    for (const it of intents) {
+    for (const it of ranked) {
       if (distinct.some((x) => x.tag === it.tag && x.sub === it.sub)) continue;
       distinct.push(it);
       if (distinct.length >= 3) break;
@@ -984,45 +977,44 @@ const ranked = [...intents].sort((a, b) => {
   const buckets = { now: [], next: [], also: [] };
   const seen = new Set();
 
-  // helper to add items safely
   let nowScheduleCount = 0;
-let nextScheduleCount = 0;
+  let nextScheduleCount = 0;
 
-function isSchedulingStep(text) {
-  return /schedule|book|make an appointment|call|urgent care/i.test(text);
-}
-  function add(bucket, text, limit) {
-  const key = text.toLowerCase();
-  if (seen.has(key)) return false;
-  if (buckets[bucket].length >= limit) return false;
-
-  // limit scheduling actions
-  if (isSchedulingStep(text)) {
-    if (bucket === "now" && nowScheduleCount >= 1) return false;
-    if (bucket === "next" && nextScheduleCount >= 2) return false;
-
-    if (bucket === "now") nowScheduleCount++;
-    if (bucket === "next") nextScheduleCount++;
+  function isSchedulingStep(text) {
+    return /schedule|book|make an appointment|call|urgent care/i.test(text);
   }
 
-  seen.add(key);
-  buckets[bucket].push(text);
-  return true;
-}
+  function add(bucket, text, limit) {
+    const key = String(text || "").toLowerCase();
+    if (!key) return false;
+    if (seen.has(key)) return false;
+    if (buckets[bucket].length >= limit) return false;
 
+    if (isSchedulingStep(text)) {
+      if (bucket === "now" && nowScheduleCount >= 1) return false;
+      if (bucket === "next" && nextScheduleCount >= 2) return false;
+
+      if (bucket === "now") nowScheduleCount++;
+      if (bucket === "next") nextScheduleCount++;
+    }
+
+    seen.add(key);
+    buckets[bucket].push(text);
+    return true;
+  }
+
+  // Seed "now"
   for (const it of distinct) {
-  const steps = stepsForIntent(it, { ...ctx, scenario });
+    const steps = stepsForIntent(it, { ...ctx, scenario });
+    let nowStep = steps.find(
+      (s) => s.bucket === "now" && /schedule|book|call|urgent care/i.test(s.text)
+    );
+    if (!nowStep) nowStep = steps.find((s) => s.bucket === "now");
+    if (nowStep) add("now", nowStep.text, 3);
+  }
 
-  // Prefer a "now" step that contains a scheduling action for health stuff
-  let nowStep = steps.find((s) => s.bucket === "now" && /schedule|book|call|urgent care/i.test(s.text));
-  if (!nowStep) nowStep = steps.find((s) => s.bucket === "now");
-
-  if (nowStep) add("now", nowStep.text, 3);
-}
-
-  // 3) Then fill remaining slots using all steps
-  const allIntents = distinct; // keep it tight (3 categories)
-  for (const it of allIntents) {
+  // Fill remaining
+  for (const it of distinct) {
     const steps = stepsForIntent(it, { ...ctx, scenario });
     for (const s of steps) {
       if (add("now", s.text, 3)) continue;
@@ -1031,22 +1023,22 @@ function isSchedulingStep(text) {
     }
   }
 
-  // Guarantee at least 2 items in "now" if possible
   if (buckets.now.length < 2 && buckets.next.length) {
     buckets.now.push(buckets.next.shift());
   }
 
-  // Guarantee at least 1 “now”
   if (buckets.now.length === 0) {
     buckets.now.push("Take one small step: pick the most urgent issue and handle it first.");
   }
-if (overloadModifier) {
-  buckets.now = [...overloadModifier.now, ...buckets.now].slice(0,3);
-  buckets.also = [...(buckets.also || []), ...overloadModifier.also].slice(0,3);
-}
+
+  // Apply overload modifier at the end (prevents the crash)
+  if (overloadModifier) {
+    buckets.now = [...overloadModifier.now, ...buckets.now].slice(0, 3);
+    buckets.also = [...buckets.also, ...overloadModifier.also].slice(0, 3);
+  }
+
   return buckets;
 }
-
 function renderNextStepsCard(steps) {
   const renderList = (arr) =>
     arr && arr.length
