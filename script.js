@@ -680,7 +680,189 @@ function buildOutsideResources(intents, geo) {
 };
   });
 }
+// ---------- Personalized Next Steps ----------
+function stepsForIntent(intent, { campusKey, campusLabel, geo }) {
+  const onCampus = Boolean(campusKey);
+  const campusText = onCampus && campusLabel ? ` at ${campusLabel}` : "";
 
+  // Each step is short + action-based
+  switch (intent.tag) {
+    case "academic_support":
+      if (intent.sub === "tutoring" || intent.sub === "default" || intent.sub === "test_prep") {
+        return [
+          { bucket: "now", text: "Pick one class to triage first (the most urgent deadline)." },
+          { bucket: "now", text: `Open tutoring/learning support${campusText} and book the earliest slot.` },
+          { bucket: "next", text: "Email your professor/TA: ask what to focus on this week + confirm office hours." },
+          { bucket: "next", text: "Make a 45-minute plan: 25 min work → 5 min break → repeat once." },
+        ];
+      }
+      if (intent.sub === "writing") {
+        return [
+          { bucket: "now", text: `Book a writing center slot${campusText} (even 20 minutes helps).` },
+          { bucket: "now", text: "Write a 3-sentence thesis + 3 bullet outline before editing anything." },
+          { bucket: "next", text: "Run a quick citation check (APA/MLA) and fix missing sources." },
+        ];
+      }
+      return [
+        { bucket: "now", text: "Identify the exact thing you’re stuck on (topic, assignment, or exam)." },
+        { bucket: "next", text: `Use academic support${campusText} to get targeted help.` },
+      ];
+
+    case "mental_health":
+      if (intent.sub === "therapy" || intent.sub === "default" || intent.sub === "stress") {
+        return [
+          { bucket: "now", text: "Take one tiny reset: drink water + unclench your shoulders + 3 slow breaths." },
+          { bucket: "now", text: `If you can, schedule counseling/wellness support${campusText}.` },
+          { bucket: "next", text: "Text a friend: “Can you check in with me tonight?”" },
+          { bucket: "next", text: "Reduce load: pick 1 task to drop/postpone for 24 hours." },
+        ];
+      }
+      if (intent.sub === "sleep") {
+        return [
+          { bucket: "now", text: "Set a realistic ‘lights out’ time (even 30 minutes earlier helps)." },
+          { bucket: "next", text: "Stop caffeine 8 hours before sleep; dim screens 45 minutes before bed." },
+          { bucket: "next", text: `If this is ongoing, consider wellness support${campusText}.` },
+        ];
+      }
+      return [
+        { bucket: "now", text: "Name what you’re feeling (stress/anxiety/loneliness) — it lowers intensity." },
+        { bucket: "next", text: `Reach out for support${campusText}.` },
+      ];
+
+    case "food_support":
+      if (intent.sub === "pantry" || intent.sub === "free_meals" || intent.sub === "cheap") {
+        return [
+          { bucket: "now", text: "Check for a campus pantry / free meal option first (fastest + lowest cost)." },
+          { bucket: "next", text: "If you’re low on funds, plan 2–3 cheap staples for the week (rice/pasta/eggs/beans)." },
+        ];
+      }
+      if (intent.sub === "late_night") {
+        return [
+          { bucket: "now", text: "Check what’s open late near you and pick the closest option." },
+          { bucket: "next", text: "Save 2 reliable late-night spots so you don’t have to search next time." },
+        ];
+      }
+      return [
+        { bucket: "now", text: "Decide: dining hall vs quick off-campus option." },
+        { bucket: "next", text: "Save a couple ‘default meals’ for stressful weeks." },
+      ];
+
+    case "health_support":
+      if (intent.sub === "urgent") {
+        return [
+          { bucket: "now", text: "If symptoms feel severe or sudden, prioritize urgent care today." },
+          { bucket: "next", text: "Write down symptoms + timing + meds so it’s easy to explain." },
+        ];
+      }
+      if (intent.sub === "sti") {
+        return [
+          { bucket: "now", text: `Schedule STI testing${campusText} (or nearby clinic if faster).` },
+          { bucket: "next", text: "Avoid guessing — confirm results before self-treating." },
+          { bucket: "next", text: "If needed, ask about confidential options and cost." },
+        ];
+      }
+      return [
+        { bucket: "now", text: `Book a clinic appointment${campusText} or nearby provider.` },
+        { bucket: "next", text: "Bring insurance info + a quick symptom list." },
+      ];
+
+    case "financial_support":
+      return [
+        { bucket: "now", text: `Check financial aid / basic needs support${campusText}.` },
+        { bucket: "next", text: "List your next 2 bills and their due dates to reduce panic." },
+        { bucket: "next", text: "Ask if emergency grants or short-term help is available." },
+      ];
+
+    case "housing_support":
+      return [
+        { bucket: "now", text: `Contact housing/residence life${campusText} if this affects safety or stability.` },
+        { bucket: "next", text: "Document issues (photos + dates) if it’s maintenance/roommate conflict." },
+      ];
+
+    case "transport_support":
+      return [
+        { bucket: "now", text: "Check today’s route/schedule and screenshot it." },
+        { bucket: "next", text: "Save a backup route (bus/train/rideshare pickup spot)." },
+      ];
+
+    case "community_support":
+      return [
+        { bucket: "now", text: "Pick ONE low-pressure option (event/club) and commit to showing up once." },
+        { bucket: "next", text: "Message someone: “Want to go with me?” (reduces friction a lot)." },
+      ];
+
+    case "career_support":
+      return [
+        { bucket: "now", text: "Pick one goal: resume review OR internship search OR interview prep." },
+        { bucket: "next", text: `Book career services${campusText} and bring your current resume.` },
+      ];
+
+    default:
+      return [
+        { bucket: "now", text: "Pick one immediate need and handle it first." },
+        { bucket: "next", text: "Then use the resources below to follow through." },
+      ];
+  }
+}
+
+function buildNextSteps(intents, ctx) {
+  // Crisis override (you already detect crisis)
+  if (intents.some((i) => i.tag === "crisis")) {
+    return {
+      now: [
+        "If you’re in immediate danger, call 911.",
+        "If you’re thinking about self-harm, call or text 988 (US) right now.",
+      ],
+      next: ["Open the Emergency tab for chat + hotline options."],
+      also: [],
+    };
+  }
+
+  const buckets = { now: [], next: [], also: [] };
+
+  // Gather steps from up to 3 intents (keeps it short)
+  const top = intents.slice(0, 3);
+  const seen = new Set();
+
+  for (const it of top) {
+    const steps = stepsForIntent(it, ctx);
+    for (const s of steps) {
+      const key = s.text.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      if (s.bucket === "now" && buckets.now.length < 2) buckets.now.push(s.text);
+      else if (s.bucket === "next" && buckets.next.length < 2) buckets.next.push(s.text);
+      else if (buckets.also.length < 2) buckets.also.push(s.text);
+    }
+  }
+
+  // Guarantee at least 1 “now”
+  if (buckets.now.length === 0) buckets.now.push("Take one small step: pick the most urgent issue and handle it first.");
+
+  return buckets;
+}
+
+function renderNextStepsCard(steps) {
+  const renderList = (arr) =>
+    arr && arr.length
+      ? `<ul class="steps">${arr.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`
+      : `<p class="muted">—</p>`;
+
+  return `
+    <div class="card">
+      <h3>✅ Suggested next steps</h3>
+
+      <div class="muted" style="margin-top:6px;">Do now</div>
+      ${renderList(steps.now)}
+
+      <div class="muted" style="margin-top:10px;">Next</div>
+      ${renderList(steps.next)}
+
+      ${steps.also?.length ? `<div class="muted" style="margin-top:10px;">Also helpful</div>${renderList(steps.also)}` : ""}
+    </div>
+  `;
+}
 // ---------- Rendering ----------
 function renderResourceList(resources) {
   if (!resources.length) return `<p class="muted">No matching resources found.</p>`;
@@ -837,6 +1019,8 @@ window.analyze = async function analyze() {
 
   const geo = await getGeoIfAllowed();
   const outside = buildOutsideResources(intents, geo);
+  const nextSteps = buildNextSteps(intents, { campusKey, campusLabel, geo });
+const nextStepsBlock = renderNextStepsCard(nextSteps);
 
   const chips = intents
     .slice(0, 4)
@@ -879,7 +1063,7 @@ window.analyze = async function analyze() {
     </div>
   `;
 
-  const html = header + campusBlock + outsideBlock + disclaimer;
+const html = header + nextStepsBlock + campusBlock + outsideBlock + disclaimer;
   outputEl.innerHTML = html;
   outputEl.scrollIntoView({ behavior: "smooth", block: "start" });
   // Save chat
