@@ -2,13 +2,7 @@
    Recoleta (LOCAL)
    Put Recoleta-RegularDEMO.otf in the SAME folder as style.css
 ========================= */
-@font-face {
-  font-family: "Recoleta";
-  src: url("Recoleta-RegularDEMO.otf") format("opentype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+
 
 /* =========================
    Theme Variables
@@ -425,10 +419,11 @@ button:not(.smallBtn):hover {
   bottom: -40px;
   right: -40px;
   font-size: 300px;
-  pointer-events: none; /* 确保不挡住按钮点击 */
+  pointer-events: none;
   z-index: -1;
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.6s ease;
   filter: grayscale(0.4);
+  user-select: none;
 }
 
 .logoText {
